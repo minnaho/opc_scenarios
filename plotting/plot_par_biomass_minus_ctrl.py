@@ -49,6 +49,8 @@ end_year = 1997
 start_month = 8
 end_month = 9
 
+ctrlpath = '/data/project6/ROMS/L2SCB_1997_2000/daily/'
+
 # file paths
 fpath = []
 for e_i in range(len(exp)):

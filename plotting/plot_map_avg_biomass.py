@@ -25,11 +25,11 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 plt.ion()
 
 # avg maps
-outpath = '/data/project6/minnaho/opc_scenarios/avg_depth/'
-filename = 'avg'
+outpath = '/data/project6/minnaho/opc_scenarios/ts_int_sli/'
+filename = 'int'
 
 savepath = './figs/maps/'
-depth = '30_45'
+depth = '100m'
 
 # month or season
 
@@ -39,32 +39,34 @@ end_year = 1997
 start_month = 11
 end_month = 6
 
-timename = 'Y1997M08'
+timename = 'Y1998M04_06'
 
 timeunit = 'days since 1997-08-01'
 
 exp = ['cntrl','l1617','PNDN_only','FNDN_only',
-       'pndn50','pndn90','fndn50','fndn90']
+       'pndn50','fndn90']
+title_exp = ['CTRL','Loads 16-17','PNDN only','FNDN only',
+             'PNDN 50','FNDN 90']
 
 # roms var
-var_nc = 'NH4'
+var_nc = 'biomass'
 #cblabel = 'Density (kg m$^{-3}$)'
 #cblabel = 'Temperature C'
-cblabel = var_nc+' mmol m$^{-3}$'
+cblabel = var_nc+' mmol m$^{-2}$'
 #cblabel = var_nc+' (mmol m$^{-3}$)'
 #cblabel = var_nc+' (PSU)'
 #cblabel = 'integrated mmol C m$^{-2}$'
 
 # color map
-c_map = cmocean.cm.dense
+#c_map = cmocean.cm.dense
 #c_map = cmocean.cm.thermal
-#c_map = cmocean.cm.algae
+c_map = cmocean.cm.algae
 #c_map = cmocean.cm.deep
 
 # outputs
 ncfiles = []
 for e_i in range(len(exp)):
-    ncfiles.append(outpath+filename+'_'+depth+'_'+var_nc+'_'+exp[e_i]+'_'+timename+'.nc')
+    ncfiles.append(outpath+filename+'_'+depth+'_'+exp[e_i]+'_'+var_nc+'_avg_'+timename+'.nc')
 
 # grid path
 grid_nc = l2grid.grid_nc
@@ -118,9 +120,13 @@ if var_nc == 'temp':
     v_max = 20
     #v_min = np.nanmin(roms_var_cntrl)
     v_min = 10
+if var_nc == 'biomass':
+    v_max = 500
+    #v_min = np.nanmin(roms_var_cntrl)
+    v_min = 0
 
 
-fig,ax = plt.subplots(2,4,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
+fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
 for t_i in range(len(ncfiles)):
     datanc = Dataset(ncfiles[t_i],'r')
@@ -132,21 +138,9 @@ for t_i in range(len(ncfiles)):
     # plot maps
     p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,vmin=v_min,vmax=v_max)
     
-    # plot contours
-    #clinecolor = 'k'
-    #c_plt_cntrl = ax.flat[0].contour(lon_reshape[:,ind_st_p:ind_en_p],z_r_cntrl[:,ind_st_p:ind_en_p],roms_var_cntrl[:,ind_st_p:ind_en_p],clines,colors=clinecolor,linewidths=1)
-    #c_plt_fresh = ax.flat[1].contour(lon_reshape[:,ind_st_p:ind_en_p],z_r_fresh[:,ind_st_p:ind_en_p],roms_var_fresh[:,ind_st_p:ind_en_p],clines,colors=clinecolor,linewidths=1)
-    #c_plt_nutri = ax.flat[2].contour(lon_reshape[:,ind_st_p:ind_en_p],z_r_nutri[:,ind_st_p:ind_en_p],roms_var_nutri[:,ind_st_p:ind_en_p],clines,colors=clinecolor,linewidths=1)
-    #c_plt_fulll = ax.flat[3].contour(lon_reshape[:,ind_st_p:ind_en_p],z_r_fulll[:,ind_st_p:ind_en_p],roms_var_fulll[:,ind_st_p:ind_en_p],clines,colors=clinecolor,linewidths=1)
-    #
-    #ax.flat[0].clabel(c_plt_cntrl,fontsize=9,fmt='%.1f',inline=1)
-    #ax.flat[1].clabel(c_plt_fresh,fontsize=9,fmt='%.1f',inline=1)
-    #ax.flat[2].clabel(c_plt_nutri,fontsize=9,fmt='%.1f',inline=1)
-    #ax.flat[3].clabel(c_plt_fulll,fontsize=9,fmt='%.1f',inline=1)
+    #fig.suptitle(timename,fontsize=axis_tick_size)
     
-    fig.suptitle(timename,fontsize=axis_tick_size)
-    
-    ax.flat[t_i].set_title(exp[t_i],fontsize=axis_tick_size)
+    ax.flat[t_i].set_title(title_exp[t_i],fontsize=axis_tick_size)
     
     
 for a_i in range(len(ax.flat)):
@@ -167,10 +161,10 @@ for a_i in range(len(ax.flat)):
     gl.ylabel_style = {'size':axis_tick_size}
     if a_i == 0:
         gl.xlabels_bottom = False
-    if a_i == 1 or a_i == 2 or a_i == 3:
+    if a_i == 1 or a_i == 2:
         gl.xlabels_bottom = False
         gl.ylabels_left = False
-    if a_i == 5 or a_i == 6 or a_i == 7:
+    if a_i == 4 or a_i == 5:
         gl.ylabels_left = False
     step_lon = .4
     step_lat = .2
@@ -182,11 +176,11 @@ for a_i in range(len(ax.flat)):
     gl.xformatter = LONGITUDE_FORMATTER
 
 # colorbar
-p0 = ax.flat[3].get_position().get_points().flatten()
-p1 = ax.flat[7].get_position().get_points().flatten()
+p0 = ax.flat[2].get_position().get_points().flatten()
+p1 = ax.flat[5].get_position().get_points().flatten()
 cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
 
-cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1f')
+cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1i')
 cb.set_label(cblabel,fontsize=axis_tick_size)
 cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
