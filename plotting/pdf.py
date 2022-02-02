@@ -14,7 +14,7 @@ savepath = './figs/pdf/'
 varnc = 'var'
 
 varname = 'int_100m_biomass'
-exp = 'CERF'
+exp = '1999'
 
 # nsd, ssd, oc, sp, sm, v, sb, or scb 
 region_name = 'coast'
@@ -24,7 +24,7 @@ savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
 # grid variables
 mask_nc = l2grid.mask_nc
 
-dtstr = 'Y1997_1998_M11_06'
+dtstr = 'Y1999M01_11'
 
 # read variables
 l1617_nc = Dataset(roms_path+'int_100m_l1617_biomass_'+dtstr+'.nc','r')
@@ -33,7 +33,8 @@ fulll_nc = Dataset(roms_path+'int_100m_fndn90_biomass_'+dtstr+'.nc','r')
 exp01_nc = Dataset(roms_path+'int_100m_PNDN_only_biomass_'+dtstr+'.nc','r')
 exp02_nc = Dataset(roms_path+'int_100m_FNDN_only_biomass_'+dtstr+'.nc','r')
 exp03_nc = Dataset(roms_path+'int_100m_pndn50_biomass_'+dtstr+'.nc','r')
-#exp04_nc = Dataset(roms_path+'int_100m_pndn90_biomass_'+dtstr+'.nc','r')
+exp04_nc = Dataset(roms_path+'int_100m_pndn90_biomass_'+dtstr+'.nc','r')
+exp05_nc = Dataset(roms_path+'int_100m_fndn50_biomass_'+dtstr+'.nc','r')
 
 l1617_var = np.array(l1617_nc.variables[varnc])
 cntrl_var = np.array(cntrl_nc.variables[varnc])
@@ -41,6 +42,8 @@ fulll_var = np.array(fulll_nc.variables[varnc])
 exp01_var = np.array(exp01_nc.variables[varnc])
 exp02_var = np.array(exp02_nc.variables[varnc])
 exp03_var = np.array(exp03_nc.variables[varnc])
+exp04_var = np.array(exp04_nc.variables[varnc])
+exp05_var = np.array(exp05_nc.variables[varnc])
 
 # remove all negative and 0 values
 l1617_var[l1617_var<=0] = np.nan
@@ -49,6 +52,8 @@ fulll_var[fulll_var<=0] = np.nan
 exp01_var[exp01_var<=0] = np.nan
 exp02_var[exp02_var<=0] = np.nan
 exp03_var[exp03_var<=0] = np.nan
+exp04_var[exp04_var<=0] = np.nan
+exp05_var[exp05_var<=0] = np.nan
 
 # remove all negative values
 #l1617_var[l1617_var<0] = np.nan
@@ -115,6 +120,8 @@ fulll_var = fulll_var*mask_mult
 exp01_var = exp01_var*mask_mult
 exp02_var = exp02_var*mask_mult
 exp03_var = exp03_var*mask_mult
+exp04_var = exp04_var*mask_mult
+exp05_var = exp05_var*mask_mult
 
 # stats
 nbins = 500
@@ -124,6 +131,8 @@ n_l,bins_l,patch_l = plt.hist(l1617_var.flatten(),nbins)
 n_1,bins_1,patch_1 = plt.hist(exp01_var.flatten(),nbins)
 n_2,bins_2,patch_2 = plt.hist(exp02_var.flatten(),nbins)
 n_3,bins_3,patch_3 = plt.hist(exp03_var.flatten(),nbins)
+n_4,bins_4,patch_4 = plt.hist(exp04_var.flatten(),nbins)
+n_5,bins_5,patch_5 = plt.hist(exp05_var.flatten(),nbins)
 
 # non nan values
 flt_c = np.where(~np.isnan(cntrl_var.flatten()))[0].shape[0]
@@ -132,6 +141,8 @@ flt_l = np.where(~np.isnan(l1617_var.flatten()))[0].shape[0]
 flt_1 = np.where(~np.isnan(exp01_var.flatten()))[0].shape[0]
 flt_2 = np.where(~np.isnan(exp02_var.flatten()))[0].shape[0]
 flt_3 = np.where(~np.isnan(exp03_var.flatten()))[0].shape[0]
+flt_4 = np.where(~np.isnan(exp04_var.flatten()))[0].shape[0]
+flt_5 = np.where(~np.isnan(exp05_var.flatten()))[0].shape[0]
 #flt = cntrl_var.flatten().shape[0]
 
 #l1617_stat = stats.gaussian_kde(l1617_var)
@@ -145,9 +156,11 @@ n_f = np.append(n_f,0)
 n_1 = np.append(n_1,0)
 n_2 = np.append(n_2,0)
 n_3 = np.append(n_3,0)
+n_4 = np.append(n_4,0)
+n_5 = np.append(n_5,0)
 
 # plot
-plt.ion()
+#plt.ion()
 
 figw = 12
 figh = 8
@@ -168,10 +181,12 @@ fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 # plot all bins
 ax.plot(bins_c,n_c/flt_c,color='green',linewidth=1.5,label='CTRL')
 ax.plot(bins_l,n_l/flt_l,color='blue',linestyle=':',linewidth=1.5,label='16-17 loads')
-ax.plot(bins_1,n_1/flt_1,color='orange',linestyle='--',linewidth=1.5,label='PNDN only')
-ax.plot(bins_3,n_3/flt_3,color='purple',linestyle='dashdot',linewidth=1.5,label='PNDN 50')
-ax.plot(bins_2,n_2/flt_2,color='gray',linestyle='--',linewidth=1.5,label='FNDN only')
-ax.plot(bins_f,n_f/flt_f,color='r',linestyle=':',linewidth=1.5,label='FNDN 90')
+ax.plot(bins_1,n_1/flt_1,color='orange',linestyle='-',linewidth=1.5,label='PNDN only')
+ax.plot(bins_3,n_3/flt_3,color='orange',linestyle='--',linewidth=1.5,label='PNDN 50')
+ax.plot(bins_4,n_4/flt_4,color='orange',linestyle=':',linewidth=1.5,label='PNDN 90')
+ax.plot(bins_2,n_2/flt_2,color='gray',linestyle='-',linewidth=1.5,label='FNDN only')
+ax.plot(bins_5,n_5/flt_5,color='gray',linestyle='--',linewidth=1.5,label='FNDN 50')
+ax.plot(bins_f,n_f/flt_f,color='gray',linestyle=':',linewidth=1.5,label='FNDN 90')
 
 ax.set_xlim([-10,500])
 

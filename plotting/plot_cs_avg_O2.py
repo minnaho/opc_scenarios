@@ -18,10 +18,10 @@ import calendar
 import seawater as sw
 
 # plot fresh vs nutrients vs control vs full
-plt.ion()
+#plt.ion()
 
 savepath = './figs/cs/'
-loc = 'HTP'
+loc = 'OCSan'
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
@@ -31,14 +31,14 @@ var_name = 'O2'
 var_nc = 'var' 
 cblabel = 'mmol '+var_name+' m$^{-3}$'
 
-year_month = 'Y199804_06'
+year_month = 'Y1999M07_09'
 
 # scenario names 
 #exp = ['PNDN_only','fndn90']
 exp = ['l1617','PNDN_only','fndn90']
 title_exp = ['Loads 16-17','PNDN only','FNDN 90']
 
-filest = 'ext_0_80_O2_avg_'+year_month+'_'
+filest = 'ext_0_80_'+var_name+'_avg_'+year_month+'_'
 fileen = '-cntrl.nc'
 
 fpath = []
@@ -58,7 +58,7 @@ if var_nc == 'temp':
 if var_nc == 'biomass':
     clines = [0.5,1,3,5,10,15,20,25]
 if var_name == 'O2':
-    clines = [-20,-15,-10,-5,-1,1,5,10,15,20,25]
+    clines = [-25,-20,-15,-10,-5,-1,1,5,10,15,20,25]
 
 
 # grid path
@@ -232,8 +232,8 @@ for n_i in range(len(exp)):
         v_max = np.nanmax(roms_var)
         v_min = -np.nanmax(roms_var)
     if var_name == 'O2':
-        v_max = 15
-        v_min = -15
+        v_max = 25
+        v_min = -25
 
     #  plot 
     p_plot = ax.flat[n_i].pcolor(lon_slice,z_r,roms_var,cmap=c_map,vmin=v_min,vmax=v_max)
@@ -261,6 +261,9 @@ for n_i in range(len(exp)):
     ax.flat[n_i].set_title(title_exp[n_i],fontsize=axis_tick_size)
     ax.flat[n_i].tick_params(axis='both',which='major',labelsize=axis_tick_size)
     ax.flat[n_i].invert_yaxis()
+    # tick marks on all axes
+    ax.flat[n_i].yaxis.set_ticks_position('both')
+    ax.flat[n_i].xaxis.set_ticks_position('both')
 
     # plot contours
     clinecolor = 'k'
@@ -290,7 +293,7 @@ cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 ax.flat[0].get_xaxis().set_ticklabels([])
 ax.flat[1].get_xaxis().set_ticklabels([])
 
-fig.suptitle('Average O2 '+loc,fontsize=axis_tick_size)
+#fig.suptitle('Average O2 '+loc,fontsize=axis_tick_size)
 
 
 fig.savefig(savepath+savename,bbox_inches='tight')
