@@ -24,7 +24,7 @@ savepath = './figs/cs/'
 loc = 'JWPCP'
 
 # ROMS output location
-outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
+outpath = '/data/project6/ROMS/L2SCB_OPC/'
 
 # roms var
 var_name = 'DIN' 
@@ -34,9 +34,10 @@ cblabel = 'mmol '+var_name+' m$^{-3}$'
 year_month = 'Y1998M01_06'
 
 # scenario names 
-#exp = ['PNDN_only','fndn90']
-exp = ['cntrl','l1617','PNDN_only','fndn90']
-title_exp = ['CTRL','Loads 16-17','PNDN only','FNDN 90']
+#exp = ['cntrl','l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+#title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+exp = ['cntrl','l1617','PNDN_only','pndn50']
+title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50']
 
 filest = 'ext_0_80_'+var_name+'_avg_'+year_month+'_'
 fileen = '.nc'

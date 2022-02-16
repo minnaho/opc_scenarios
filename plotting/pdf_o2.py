@@ -8,16 +8,16 @@ from netCDF4 import Dataset,num2date,date2num
 import matplotlib.pyplot as plt
 from collections import Counter
 
-roms_path = '/data/project6/minnaho/opc_scenarios/ts_int_sli/'
+roms_path = '/data/project6/minnaho/opc_scenarios/ext_depth/'
 savepath = './figs/pdf/'
 
 varnc = 'var'
 
-varname = 'int_100m_biomass'
+varname = 'ext_0_80_O2'
 exp = '1998'
 
-# nsd, ssd, oc, sp, sm, v, sb, or grid or coast (15 km)
-region_name = 'coast'
+# nsd, ssd, oc, sp, sm, v, sb, or scb 
+region_name = 'grid'
 
 savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
 
@@ -27,14 +27,14 @@ mask_nc = l2grid.mask_nc
 dtstr = 'Y1998M01_12'
 
 # read variables
-l1617_nc = Dataset(roms_path+'int_100m_l1617_biomass_'+dtstr+'.nc','r')
-cntrl_nc = Dataset(roms_path+'int_100m_cntrl_biomass_'+dtstr+'.nc','r')
-fulll_nc = Dataset(roms_path+'int_100m_fndn90_biomass_'+dtstr+'.nc','r')
-exp01_nc = Dataset(roms_path+'int_100m_PNDN_only_biomass_'+dtstr+'.nc','r')
-exp02_nc = Dataset(roms_path+'int_100m_FNDN_only_biomass_'+dtstr+'.nc','r')
-exp03_nc = Dataset(roms_path+'int_100m_pndn50_biomass_'+dtstr+'.nc','r')
-exp04_nc = Dataset(roms_path+'int_100m_pndn90_biomass_'+dtstr+'.nc','r')
-exp05_nc = Dataset(roms_path+'int_100m_fndn50_biomass_'+dtstr+'.nc','r')
+l1617_nc = Dataset(roms_path+varname+'_'+dtstr+'_l1617.nc','r')
+cntrl_nc = Dataset(roms_path+varname+'_'+dtstr+'_cntrl.nc','r')
+fulll_nc = Dataset(roms_path+varname+'_'+dtstr+'_fndn90.nc','r')
+exp01_nc = Dataset(roms_path+varname+'_'+dtstr+'_PNDN_only.nc','r')
+exp02_nc = Dataset(roms_path+varname+'_'+dtstr+'_FNDN_only.nc','r')
+exp03_nc = Dataset(roms_path+varname+'_'+dtstr+'_pndn50.nc','r')
+exp04_nc = Dataset(roms_path+varname+'_'+dtstr+'_pndn90.nc','r')
+exp05_nc = Dataset(roms_path+varname+'_'+dtstr+'_fndn50.nc','r')
 
 l1617_var = np.array(l1617_nc.variables[varnc])
 cntrl_var = np.array(cntrl_nc.variables[varnc])

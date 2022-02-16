@@ -11,7 +11,7 @@ import glob as glob
 import matplotlib.pyplot as plt
 
 # plot fresh vs nutrients vs control vs full
-#plt.ion()
+plt.ion()
 
 savepath = './figs/scatter/'
 region_name = 'coast'
@@ -24,13 +24,13 @@ var_name = 'npp'
 var_nc = 'var_int' 
 cblabel = 'mmol m$^{-3}$ s$^{-1}$'
 
-year_month = 'Y1998_M04_06'
-timename = 'Spring 1998'
+year_month = 'Y1998_M07_09'
+timename = 'Summer 1998'
 
 # scenario names 
 #exp = ['PNDN_only','fndn90']
-exp = ['cntrl','loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
 #exp = ['l1617','PNDN_only','fndn90']
 #title_exp = ['Loads 16-17','PNDN only','FNDN 90']
 
@@ -38,6 +38,7 @@ filest = 'int_avg_100m_50m_'
 fileen = '_'+var_name+'_'+year_month+'.nc'
 
 # region masks
+mask_nc = l2grid.mask_nc
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
 mask_nsd = np.array(region_mask.variables['mask_nsd'])
@@ -78,12 +79,12 @@ if region_name == 'v':
 if region_name == 'sb':
     mask_mult = mask_sb
     regtitle = 'Santa Barbara'
-if region_name == 'scb': # full L2 grid
-    mask_mult = mask_nc
-    regtitle = 'SCB'
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
+if region_name == 'grid':
+    mask_mult = mask_nc
+    regtitle = 'full SCB'
 
 fpath = []
 for e_i in range(len(exp)):

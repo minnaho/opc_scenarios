@@ -4,6 +4,7 @@
 import sys
 import os
 sys.path.append('/data/project3/minnaho/global/')
+import l2grid as l2grid
 import numpy as np
 from netCDF4 import Dataset,num2date
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'sm'
+region_name = 'grid'
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
@@ -22,13 +23,13 @@ var_name = 'O2'
 var_nc = 'var' 
 cblabel = 'mmol '+var_name+' m$^{-3}$'
 
-year_month = 'summer1998'
+year_month = 'spring1998'
 
 # scenario names 
 #exp = ['l1617','PNDN_only','FNDN_only','pndn50','pndn90','fndn50','fndn90']
 #title_exp = ['Loads 16-17','PNDN only','FNDN only','PNDN 50','PNDN 90','FNDN 50','FNDN 90']
-exp = ['l1617','PNDN_only','FNDN_only','pndn50','pndn90','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN only','FNDN only','PNDN 50','PNDN 90','FNDN 50','FNDN 90']
+exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
 #exp = ['l1617','PNDN_only','fndn90']
 #title_exp = ['Loads 16-17','PNDN only','FNDN 90']
 
@@ -36,6 +37,7 @@ filest = 'sub_avg_'+year_month+'_0_80_'+var_name+'_'
 fileen = '.nc'
 
 # region masks
+mask_nc = l2grid.mask_nc
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
 mask_nsd = np.array(region_mask.variables['mask_nsd'])
@@ -82,6 +84,9 @@ if region_name == 'scb': # full L2 grid
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
+if region_name == 'grid':
+    mask_mult = mask_nc
+    regtitle = 'full SCB'
 
 fpath = []
 for e_i in range(len(exp)):
@@ -98,15 +103,19 @@ fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 for n_i in range(len(exp)):
 
     roms_var = np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
-    roms_neg = np.nansum(roms_var[roms_var<0])
+    # sum up all negative values then make it a positive number to plot
+    roms_neg = np.nansum(roms_var[roms_var<0])*-1
 
     ax.scatter(n_i,roms_neg)
 
+ax.set_yscale('log')
+#ax.set_ybound(lower=3E5,upper=5E7)
 ax.set_xticks(range(len(exp)))
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
 ax.set_ylabel('Sum of O2 change',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
+ax.tick_params(axis='both',which='minor',labelsize=axis_tick_size)
 
 fig.suptitle('Sum of Negative O2 '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
 

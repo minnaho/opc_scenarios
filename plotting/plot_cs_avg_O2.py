@@ -31,15 +31,21 @@ var_name = 'O2'
 var_nc = 'var' 
 cblabel = 'mmol '+var_name+' m$^{-3}$'
 
-year_month = 'Y1999M07_09'
 
 # scenario names 
 #exp = ['PNDN_only','fndn90']
-exp = ['l1617','PNDN_only','fndn90']
-title_exp = ['Loads 16-17','PNDN only','FNDN 90']
+#exp = ['l1617','PNDN_only','pndn50','pndn90']
+#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
+exp = ['FNDN_only','fndn50','fndn90']
+title_exp = ['FNDN only','FNDN 50','FNDN 90']
 
-filest = 'ext_0_80_'+var_name+'_avg_'+year_month+'_'
-fileen = '-cntrl.nc'
+#yearmonth = 'Y1999M07_09'
+#filest = 'ext_0_80_'+var_name+'_avg_'+yearmonth+'_'
+#fileen = '-cntrl.nc'
+
+yearmonth = 'summer1998'
+filest = 'sub_avg_'+yearmonth+'_0_80_'+var_name+'_'
+fileen = '.nc'
 
 fpath = []
 for e_i in range(len(exp)):
@@ -145,8 +151,8 @@ lon_reshape = np.array(lon_slice_l).reshape(srho_shape,lon_nc.shape[1])
 ind_st_p = np.nanmin(np.unique(np.where((lon_reshape[:,:]>ind_st)&(lon_reshape<ind_en))[1]))
 ind_en_p = np.nanmax(np.unique(np.where((lon_reshape[:,:]>ind_st)&(lon_reshape<ind_en))[1]))
 
-figw = 14
-figh = 7.5
+figw = 10
+figh = 14
 
 if var_nc == 'w' or var_name == 'O2':
     c_map = cmocean.cm.balance
@@ -158,7 +164,7 @@ psize = 300
 
 axis_tick_size = 14
 
-savename = 'cs_'+loc+'_avg_'+var_name+'_'+year_month+'.png'
+savename = 'cs_'+loc+'_avg_'+var_name+'_'+yearmonth+'.png'
 fig,ax = plt.subplots(len(exp),1,figsize=[figw,figh])
 
 z_r = np.array(Dataset(fpath[0],'r').variables['depth'])
@@ -290,8 +296,8 @@ cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
 
 # remove labels
-ax.flat[0].get_xaxis().set_ticklabels([])
-ax.flat[1].get_xaxis().set_ticklabels([])
+for a_i in range(len(exp)-1):
+    ax.flat[a_i].get_xaxis().set_ticklabels([])
 
 #fig.suptitle('Average O2 '+loc,fontsize=axis_tick_size)
 

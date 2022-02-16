@@ -10,11 +10,10 @@ import matplotlib.pyplot as plt
 
 #plt.ion()
 
-region_name = 'coast'
-var = 'pH'
+region_name = 'grid'
+var = 'omega'
 var_nc = 'var'
 dp = '50'
-perc = True
 
 ncpath = '/data/project6/minnaho/opc_scenarios/slices/'
 filest = 'concat_'+dp+'_'+var+'_'
@@ -26,14 +25,11 @@ cntrl_var = np.squeeze(Dataset(ncpath+cntrlnc,'r').variables[var_nc])
 
 figpath = './figs/ts/'
 
-if perc == True:
-    ylabel = var+' % change'
+if var == 'O2':
+    ylabel = 'mmol change'
 else:
-    if var != 'pH':
-        ylabel = 'mmol change'
-    else:
-        ylabel = var+' change'
-    
+    ylabel = var+' change'
+
 
 # scenario names
 exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
@@ -48,6 +44,7 @@ for e_i in range(len(exp)):
     fpath.append(ncpath+filest+exp[e_i]+fileen)
 
 # region masks
+mask_nc = l2grid.mask_nc
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
 mask_nsd = np.array(region_mask.variables['mask_nsd'])
@@ -88,7 +85,7 @@ if region_name == 'v':
 if region_name == 'sb':
     mask_mult = mask_sb
     regtitle = 'Santa Barbara'
-if region_name == 'scb': # full L2 grid
+if region_name == 'grid': # full L2 grid
     mask_mult = mask_nc
     regtitle = 'SCB'
 if region_name == 'coast':
@@ -101,34 +98,27 @@ cntrl_avg = np.nanmean(np.nanmean(cntrl_mask,axis=1),axis=1)
 
 # plotting
 axisfont = 16
-figw = 14
-figh = 10
+figw = 16
+figh = 4
 
 for n_i in range(len(exp)):
 
     roms_var = np.squeeze(np.array(Dataset(fpath[n_i],'r').variables[var_nc]))*mask_mult
     # multiply by mask then average over region
-    roms_avg = np.nanmean(np.nanmean(roms_var,axis=1),axis=1)
-
-    if perc == True:
-        roms_plt = (roms_avg-cntrl_avg)/cntrl_avg
-    else:
-        roms_plt = roms_avg-cntrl_avg
+    roms_plt = np.nanmean(np.nanmean(roms_var,axis=1),axis=1)
 
     fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-    ax.plot(dtplt,roms_plt,color='k')
-    ax.fill_between(dtplt,roms_plt,where=roms_plt<0,color='blue',alpha=0.5)
-    ax.fill_between(dtplt,roms_plt,where=roms_plt>0,color='yellow',alpha=0.5)
+    ax.plot(dtplt,roms_plt,color='k',linestyle='--')
+    ax.plot(dtplt,cntrl_avg,color='k')
+    ax.fill_between(dtplt,roms_plt,cntrl_avg,where=roms_plt<cntrl_avg,color='blue',alpha=0.5)
+    ax.fill_between(dtplt,roms_plt,cntrl_avg,where=roms_plt>cntrl_avg,color='yellow',alpha=0.5)
     ax.set_title(var+' '+dp+'m '+title_exp[n_i],fontsize=axisfont)
-    ax.plot(dtplt,np.ones(roms_plt.shape[0])*0,color='k',linestyle='--')
+    #ax.plot(dtplt,np.ones(roms_plt.shape[0])*0,color='k',linestyle='--')
 
     ax.set_ylabel(ylabel,fontsize=axisfont)
     ax.tick_params(axis='both',which='major',labelsize=axisfont)
     ax.yaxis.set_ticks_position('both')
     ax.xaxis.set_ticks_position('both')
-    if perc == True:
-        savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_perc.png'
-    else:
-        savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'.png'
+    savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_abs.png'
     fig.savefig(figpath+savename,bbox_inches='tight')
     plt.close()
