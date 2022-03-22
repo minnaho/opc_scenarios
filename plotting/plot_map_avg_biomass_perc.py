@@ -24,6 +24,8 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 plt.ion()
 
+perc = True
+
 # avg maps
 outpath = '/data/project6/minnaho/opc_scenarios/ts_int_sli/'
 filename = 'int'
@@ -32,20 +34,22 @@ savepath = './figs/maps/'
 depth = '100m'
 
 # month or season
-timename = 'Y1998M04_06'
+timename = 'Y1999M04_06'
 
 timeunit = 'days since 1997-08-01'
 
-exp = ['cntrl','l1617','PNDN_only','FNDN_only',
-       'pndn50','fndn90']
-title_exp = ['CTRL','Loads 16-17','PNDN only','FNDN only',
-             'PNDN 50','FNDN 90']
+#exp = ['l1617','PNDN_only','pndn50','pndn90']
+#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
+exp = ['l1617','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
 
 # roms var
 var_nc = 'biomass'
 #cblabel = 'Density (kg m$^{-3}$)'
 #cblabel = 'Temperature C'
 cblabel = var_nc+' mmol m$^{-2}$'
+if perc == True:
+    cblabel = var_nc+' % change'
 #cblabel = var_nc+' (mmol m$^{-3}$)'
 #cblabel = var_nc+' (PSU)'
 #cblabel = 'integrated mmol C m$^{-2}$'
@@ -53,8 +57,13 @@ cblabel = var_nc+' mmol m$^{-2}$'
 # color map
 #c_map = cmocean.cm.dense
 #c_map = cmocean.cm.thermal
-c_map = cmocean.cm.algae
+#c_map = cmocean.cm.algae
 #c_map = cmocean.cm.deep
+#c_map = cmocean.cm.delta
+c_map = 'PRGn'
+
+# control scenario
+cntrl_nc = outpath+filename+'_'+depth+'_cntrl_'+var_nc+'_avg_'+timename+'.nc'
 
 # outputs
 ncfiles = []
@@ -68,20 +77,23 @@ lon_nc = l2grid.lon_nc
 h_nc = l2grid.h_nc
 
 # LA/OC region
-lat_min = 33.5
-lat_max = 34.1
-lon_min = -118.9
-lon_max = -117.82
+#region_name = 'laoc'
+#lat_min = 33.5
+#lat_max = 34.1
+#lon_min = -118.9
+#lon_max = -117.82
 
-#lat_min = np.nanmin(lat_nc)
-#lat_max = np.nanmax(lat_nc)
-#lon_min = np.nanmin(lon_nc)
-#lon_max = np.nanmax(lon_nc)
+# full grid
+region_name = 'grid'
+lat_min = np.nanmin(lat_nc)
+lat_max = np.nanmax(lat_nc)
+lon_min = np.nanmin(lon_nc)
+lon_max = np.nanmax(lon_nc)
 
 extent = [lon_min,lon_max,lat_min,lat_max]
 
-figw = 16
-figh = 5
+figw = 14
+figh = 10
 
 axis_tick_size = 16
 
@@ -114,22 +126,39 @@ if var_nc == 'temp':
     #v_min = np.nanmin(roms_var_cntrl)
     v_min = 10
 if var_nc == 'biomass':
-    v_max = 500
-    #v_min = np.nanmin(roms_var_cntrl)
-    v_min = 0
+    if perc == True:
+        # 1998
+        v_max = 150
+        v_min = -50
+        # 1999
+        #v_max = 50
+        #v_min = -30
+    else:
+        v_max = 150
+        v_min = -10
 
 
-fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
+fig,ax = plt.subplots(2,2,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
 for t_i in range(len(ncfiles)):
     datanc = Dataset(ncfiles[t_i],'r')
-    varplt = np.squeeze(np.array(datanc['var']))
-    varplt[varplt>1E10] = np.nan
-    varplt[varplt<=0] = np.nan
+    varrd = np.squeeze(np.array(datanc['var']))
+    varrd[varrd>1E10] = np.nan
+    varrd[varrd<=0] = np.nan
     
+    cntrld = Dataset(cntrl_nc,'r')
+    cntrlv = np.squeeze(np.array(cntrld['var']))
+    cntrlv[cntrlv>1E10] = np.nan
+    cntrlv[cntrlv<=0] = np.nan
     
+    if perc == True:    
+        varplt = ((varrd - cntrlv)/cntrlv)*100
+    else:    
+        varplt = varrd - cntrlv
+
     # plot maps
-    p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,vmin=v_min,vmax=v_max)
+    p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
+    #p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0))
     
     #fig.suptitle(timename,fontsize=axis_tick_size)
     
@@ -139,12 +168,13 @@ for t_i in range(len(ncfiles)):
 for a_i in range(len(ax.flat)):
     # mark pipe location
     for l_i in range(len(lon_potw)):
-        ax.flat[a_i].scatter(lon_potw[l_i],lat_potw[l_i],marker='o',facecolors='none',edgecolors='orange',s=100)
+        ax.flat[a_i].scatter(lon_potw[l_i],lat_potw[l_i],marker='o',facecolors='none',edgecolors='blue',s=100)
     # other grid stuff
     ax.flat[a_i].tick_params(axis='both',which='major',labelsize=axis_tick_size)
     ax.flat[a_i].yaxis.set_ticks_position('both')
     ax.flat[a_i].xaxis.set_ticks_position('both')
     ax.flat[a_i].add_feature(coast_10m,facecolor='None',edgecolor='k')
+    ax.flat[a_i].add_feature(cpf.BORDERS,facecolor='None',edgecolor='k')
     ax.flat[a_i].set_extent(extent)
     # lat/lon axes
     gl = ax.flat[a_i].gridlines(draw_labels=True,linestyle='--')
@@ -154,30 +184,35 @@ for a_i in range(len(ax.flat)):
     gl.ylabel_style = {'size':axis_tick_size}
     if a_i == 0:
         gl.xlabels_bottom = False
-    if a_i == 1 or a_i == 2:
+    if a_i == 1:
         gl.xlabels_bottom = False
         gl.ylabels_left = False
-    if a_i == 4 or a_i == 5:
+    if a_i == 3:
         gl.ylabels_left = False
-    step_lon = .4
-    step_lat = .2
-    gl.xlocator = mticker.FixedLocator(np.arange(lon_min-step_lon,lon_max+step_lon,step_lon))
-    #gl.ylocator = mticker.FixedLocator(np.arange(lat_min-step_lat,lat_max+step_lat,step_lat))
+    #step_lon = .4
+    #step_lat = .2
+    step_lon = 2
+    step_lat = 1
+    gl.xlocator = mticker.FixedLocator(np.arange(lon_min-step_lon,lon_max+step_lon,step_lon).astype(int))
+    gl.ylocator = mticker.FixedLocator(np.arange(lat_min-step_lat,lat_max+step_lat,step_lat).astype(int))
     #gl.ylocator = mticker.FixedLocator([33.4, 33.5, 33.6, 33.7, 33.8, 33.9, 34. , 34.1, 34.2])
-    gl.ylocator = mticker.FixedLocator([33.5, 33.7, 33.9, 34.1])
+    #gl.ylocator = mticker.FixedLocator([33.5, 33.7, 33.9, 34.1])
     gl.yformatter = LATITUDE_FORMATTER
     gl.xformatter = LONGITUDE_FORMATTER
 
 # colorbar
-p0 = ax.flat[2].get_position().get_points().flatten()
-p1 = ax.flat[5].get_position().get_points().flatten()
+p0 = ax.flat[1].get_position().get_points().flatten()
+p1 = ax.flat[3].get_position().get_points().flatten()
 cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
 
 cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1i')
 cb.set_label(cblabel,fontsize=axis_tick_size)
 cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
-savename = 'map_'+var_nc+'_'+depth+'_'+timename
+if perc == True:
+    savename = 'map_'+var_nc+'_'+depth+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
+else:
+    savename = 'map_'+var_nc+'_'+depth+'_'+timename+'_'+region_name+'_'+exp[-1]+'_abs.png'
 
 plt.tight_layout()
 

@@ -4,38 +4,33 @@
 import sys
 import os
 sys.path.append('/data/project3/minnaho/global/')
-import l2grid
+import l2grid as l2grid
 import numpy as np
 from netCDF4 import Dataset,num2date
-import glob as glob
 import matplotlib.pyplot as plt
 
 # plot fresh vs nutrients vs control vs full
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'coast'
+region_name = 'grid'
 
 # ROMS output location
-outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
+outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
 
 # roms var
-var_name = 'npp' 
-var_nc = 'var_int' 
-cblabel = 'mmol m$^{-3}$ s$^{-1}$'
+var_name = 'O2' 
+var_nc = 'var' 
+cblabel = 'mmol '+var_name+' m$^{-3}$'
 
-year_month = 'Y1999_M10_11'
-timename = 'Fall 1999'
+year_month = 'summer1999'
+
+filest = 'ext_0_200_'+var_name+'_'+year_month+'_'
+fileen = '.nc'
 
 # scenario names 
-#exp = ['PNDN_only','fndn90']
-exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
 title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617','PNDN_only','fndn90']
-#title_exp = ['Loads 16-17','PNDN only','FNDN 90']
-
-filest = 'int_avg_100m_50m_'
-fileen = '_'+var_name+'_'+year_month+'.nc'
 
 # region masks
 mask_nc = l2grid.mask_nc
@@ -79,6 +74,9 @@ if region_name == 'v':
 if region_name == 'sb':
     mask_mult = mask_sb
     regtitle = 'Santa Barbara'
+if region_name == 'scb': # full L2 grid
+    mask_mult = mask_nc
+    regtitle = 'SCB'
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
@@ -90,28 +88,36 @@ fpath = []
 for e_i in range(len(exp)):
     fpath.append(outpath+filest+exp[e_i]+fileen)
 
+# read in control to subtract from
+roms_cnt = np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
+
 figw = 12
 figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'.png'
+savename = 'sum_neg_'+var_name+'_'+year_month+'_'+region_name+'_200.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
-    roms_var = np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
-    roms_neg = np.nansum(roms_var)
+    roms_var_read = np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
+    roms_var = roms_var_read - roms_cnt
+    # sum up all negative values then make it a positive number to plot
+    roms_neg = np.nansum(roms_var[roms_var<0])*-1
 
     ax.scatter(n_i,roms_neg)
 
+ax.set_yscale('log')
+#ax.set_ybound(lower=3E5,upper=5E7)
 ax.set_xticks(range(len(exp)))
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
-ax.set_ylabel('Sum of '+var_name+' 100 m',fontsize=axis_tick_size)
+ax.set_ylabel('Sum of O2 change',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
+ax.tick_params(axis='both',which='minor',labelsize=axis_tick_size)
 
-fig.suptitle('Integrated '+var_name+' '+timename+' '+regtitle,fontsize=axis_tick_size)
+fig.suptitle('Sum of Negative O2 '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
 
 
 fig.savefig(savepath+savename,bbox_inches='tight')

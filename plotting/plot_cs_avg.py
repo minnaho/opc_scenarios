@@ -1,6 +1,7 @@
 ################################################
 # plot cross section of l1617,PNDN_only,fndn90 minus CTRL 
 # at major pipes
+# using daily file (not zsliced)
 ################################################
 import sys
 import os
@@ -18,18 +19,19 @@ import calendar
 import seawater as sw
 
 # plot fresh vs nutrients vs control vs full
-#plt.ion()
+plt.ion()
 
 savepath = './figs/cs/'
-loc = 'OCSan'
+loc = 'HTP'
 
 # ROMS output location
-outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
+outpath = '/data/project6/ROMS/L2SCB_OPC/'
 
 # roms var
-var_name = 'O2' 
+#var_name = 'O2' 
 var_nc = 'var' 
-cblabel = 'mmol '+var_name+' m$^{-3}$'
+#cblabel = 'mmol '+var_name+' m$^{-3}$'
+cblabel = 'N$^2$ s$^{-1}$'
 
 
 # scenario names 
@@ -39,17 +41,28 @@ cblabel = 'mmol '+var_name+' m$^{-3}$'
 exp = ['FNDN_only','fndn50','fndn90']
 title_exp = ['FNDN only','FNDN 50','FNDN 90']
 
+# paths 
+lo1617path = '/data/project6/ROMS/L2SCB_OPC/loads1617/monthly/'
+pndnonpath = '/data/project6/ROMS/L2SCB_OPC/PNDN_only/monthly/'
+fndnonpath = '/data/project6/ROMS/L2SCB_OPC/FNDN_only/monthly/'
+pndn50path = '/data/project6/ROMS/L2SCB_OPC/pndn50/monthly/'
+pndn90path = '/data/project6/ROMS/L2SCB_OPC/pndn90/monthly/'
+fndn50path = '/data/project6/ROMS/L2SCB_OPC/fndn50/monthly/'
+fndn90path = '/data/project6/ROMS/L2SCB_OPC/fndn90/monthly/'
+
+
 #yearmonth = 'Y1999M07_09'
 #filest = 'ext_0_80_'+var_name+'_avg_'+yearmonth+'_'
 #fileen = '-cntrl.nc'
 
 yearmonth = 'summer1998'
-filest = 'sub_avg_'+yearmonth+'_0_80_'+var_name+'_'
+filest = 'ext_0_200_'+var_name+'_'+yearmonth+'_'
 fileen = '.nc'
 
 fpath = []
 for e_i in range(len(exp)):
     fpath.append(outpath+filest+exp[e_i]+fileen)
+
 
 # contour lines
 if var_nc == 'rho':
@@ -81,7 +94,7 @@ if loc == 'HTP':
     ind_en = -118.47
     
     dp_st = 0
-    dp_en = 80
+    dp_en = 200
 
     dpipe = 60
     
@@ -99,7 +112,7 @@ if loc == 'JWPCP':
     ind_en = -118.31
     
     dp_st = 0
-    dp_en = 80
+    dp_en = 200
 
     dpipe = 50
 
@@ -113,7 +126,7 @@ if loc == 'OCSan':
     ind_en = -117.963
     
     dp_st = 0
-    dp_en = 80
+    dp_en = 200
     
     p_loc = 551 # location to mark pipe
 
@@ -126,8 +139,8 @@ if loc == 'PLWTP':
     ind_st = -117.4
     ind_en = -117.25
     
-    dp_st = -110
-    dp_en = 0
+    dp_st = 0
+    dp_en = 200
 
     dpipe = 95
 
@@ -151,6 +164,10 @@ lon_reshape = np.array(lon_slice_l).reshape(srho_shape,lon_nc.shape[1])
 ind_st_p = np.nanmin(np.unique(np.where((lon_reshape[:,:]>ind_st)&(lon_reshape<ind_en))[1]))
 ind_en_p = np.nanmax(np.unique(np.where((lon_reshape[:,:]>ind_st)&(lon_reshape<ind_en))[1]))
 
+# read in control variable to subtract from
+roms_cnt = np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc][0,:,y_site,:])
+roms_cnt[roms_cnt>1E10] = np.nan
+
 figw = 10
 figh = 14
 
@@ -168,8 +185,7 @@ savename = 'cs_'+loc+'_avg_'+var_name+'_'+yearmonth+'.png'
 fig,ax = plt.subplots(len(exp),1,figsize=[figw,figh])
 
 z_r = np.array(Dataset(fpath[0],'r').variables['depth'])
-#z_r_l = list(np.array(Dataset(fpath[0],'r').variables['depth']))*lon_slice.shape[0]
-#z_r = np.array(list(np.array(Dataset(fpath[0],'r').variables['depth']))*lon_slice.shape[0]).reshape(lon_nc.shape[1],srho_shape).transpose()
+
 
 for n_i in range(len(exp)):
 
@@ -206,8 +222,9 @@ for n_i in range(len(exp)):
 
         roms_var = roms_var_dtc+roms_var_spc+roms_var_dzc
     else:
-        roms_var = np.array(Dataset(fpath[n_i],'r').variables[var_nc][0,:,y_site,:])
-        roms_var[roms_var>1E10] = np.nan
+        roms_var_read = np.array(Dataset(fpath[n_i],'r').variables[var_nc][0,:,y_site,:])
+        roms_var_read[roms_var_read>1E10] = np.nan
+        roms_var = roms_var_read - roms_cnt
 
     # max and min of color bar
     if var_nc == 'rho':
@@ -261,7 +278,7 @@ for n_i in range(len(exp)):
     tick_spacingx = 0.05
     ax.flat[n_i].xaxis.set_major_locator(ticker.MultipleLocator(tick_spacingx))
     
-    tick_spacingy = 20
+    tick_spacingy = 50
     ax.flat[n_i].yaxis.set_major_locator(ticker.MultipleLocator(tick_spacingy))
 
     ax.flat[n_i].set_title(title_exp[n_i],fontsize=axis_tick_size)

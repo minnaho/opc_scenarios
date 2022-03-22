@@ -24,7 +24,7 @@ savepath = './figs/cs/'
 loc = 'OCSan'
 
 # roms var
-var_nc = '' # buoyancy frequency
+var_nc = 'N2' # buoyancy frequency
 #var_nc = 'biomass'
 #cblabel = 'Density (kg m$^{-3}$)'
 #cblabel = 'Temperature C'

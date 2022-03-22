@@ -1,0 +1,6 @@
+
+ncra int_avg_100m_50m_cntrl_npp_Y1998M0[7-9].nc int_avg_100m_50m_cntrl_npp_Y1998_M07_09.nc
+
+ncrcat concat_int_100m_fndn90_biomass_Y1997M11_12.nc concat_int_100m_fndn90_biomass_Y1998M01_12.nc concat_int_100m_fndn90_biomass_Y1999M01_11.nc concat_int_100m_fndn90_biomass.nc
+
+
