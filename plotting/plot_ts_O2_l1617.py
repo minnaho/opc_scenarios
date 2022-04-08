@@ -14,15 +14,15 @@ import matplotlib.ticker as ticker
 plt.ion()
 
 region_name = 'mask3'
-var = 'biomass'
+varstr = 'O2'
 var_nc = 'var'
-dp = '100'
+dp = '50'
 perc = False
 
-ncpath = '/data/project6/minnaho/opc_scenarios/ts_int_sli/'
-filest = 'concat_int_'+dp+'m_'
+ncpath = '/data/project6/minnaho/opc_scenarios/slices/'
+filest = 'concat_'+dp+'_'+varstr+'_'
 
-fileen = '_'+var+'.nc'
+fileen = '.nc'
 
 cntrlnc = filest+'l1617'+fileen
 cntrl_var = np.squeeze(Dataset(ncpath+cntrlnc,'r').variables[var_nc])
@@ -38,20 +38,18 @@ else:
 # scenario names
 #exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
 #title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['PNDN_only','pndn50','pndn90']
-#title_exp = ['PNDN only','PNDN 50','PNDN 90']
-exp = ['FNDN_only','fndn50','fndn90']
-title_exp = ['FNDN only','FNDN 50','FNDN 90']
+exp = ['PNDN_only','pndn50','pndn90']
+title_exp = ['PNDN only','PNDN 50','PNDN 90']
+#exp = ['FNDN_only','fndn50','fndn90']
+#title_exp = ['FNDN only','FNDN 50','FNDN 90']
 
 time_units = 'days since 1997-11-01'
 
-dtplt = num2date(np.arange(cntrl_var.shape[0]),time_units,only_use_cftime_datetimes=False,only_use_python_datetimes=True)
+dtpltlong = num2date(np.arange(cntrl_var.shape[0]),time_units,only_use_cftime_datetimes=False,only_use_python_datetimes=True)
 
 fpath = []
 for e_i in range(len(exp)):
     fpath.append(ncpath+filest+exp[e_i]+fileen)
-
-mask_nc = l2grid.mask_nc
 
 # region masks
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
@@ -65,6 +63,8 @@ mask_sb = np.array(region_mask.variables['mask_sb'])
 # 15 km of coast
 mask_cst = np.array(region_mask.variables['mask_coast'])
 
+mask_nc = l2grid.mask_nc
+
 mask_ssd[mask_ssd==0] = np.nan
 mask_nsd[mask_nsd==0] = np.nan
 mask_oc[mask_oc==0] = np.nan
@@ -72,6 +72,7 @@ mask_sp[mask_sp==0] = np.nan
 mask_sm[mask_sm==0] = np.nan
 mask_v[mask_v==0] = np.nan
 mask_sb[mask_sb==0] = np.nan
+mask_nc[mask_nc==0] = np.nan
 
 # masks 0-9
 masknum = Dataset('/data/project1/minnaho/make_masks/mask_gridL2.nc','r')
@@ -96,6 +97,7 @@ mask6[mask6==0] = np.nan
 mask7[mask7==0] = np.nan
 mask8[mask8==0] = np.nan
 mask9[mask9==0] = np.nan
+
 
 if region_name == 'ssd':
     mask_mult = mask_ssd
@@ -124,6 +126,7 @@ if region_name == 'grid': # full L2 grid
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
+
 if region_name == 'mask0':
     mask_mult = mask0
     regtitle = region_name
@@ -155,6 +158,7 @@ if region_name == 'mask9':
     mask_mult = mask9
     regtitle = region_name
 
+
 # apply mask and average for control
 cntrl_mask = cntrl_var*mask_mult
 cntrl_avg = np.nanmean(np.nanmean(cntrl_mask,axis=1),axis=1)
@@ -165,14 +169,14 @@ figw = 14
 figh = 10
 
 if perc == False:
-    v_max = 75
-    v_min = -150
+    v_max = 25
+    v_min = -25
 else:
-    v_max = 40
-    v_min = -35
+    v_max = 15
+    v_min = -15
 
 # moving average 7 days - shorten date array
-dtplt = dtplt[1:-5]
+dtplt = dtpltlong[1:-5]
 
 fig,ax = plt.subplots(len(exp),1,figsize=[figw,figh])
 
@@ -186,10 +190,14 @@ for n_i in range(len(exp)):
         roms_sub = ((roms_avg-cntrl_avg)/cntrl_avg)*100
     else:
         roms_sub = roms_avg-cntrl_avg
-    
+
+    roms_std = runmean.running_mean(np.nanstd(np.nanstd(roms_var,axis=1),axis=1),7)
+
     roms_plt = runmean.running_mean(roms_sub,7)
 
     ax[n_i].plot(dtplt,roms_plt,color='k')
+    ax[n_i].plot(dtplt,roms_plt+roms_std,color='k',linestyle='--')
+    ax[n_i].plot(dtplt,roms_plt-roms_std,color='k',linestyle='--')
     ax[n_i].fill_between(dtplt,roms_plt,where=roms_plt<0,color='blue',alpha=0.5)
     ax[n_i].fill_between(dtplt,roms_plt,where=roms_plt>0,color='yellow',alpha=0.5)
     ax[n_i].set_title(title_exp[n_i],fontsize=axisfont)
@@ -209,8 +217,8 @@ for n_i in range(len(exp)):
         ax[n_i].xaxis.set_ticklabels([])
 
 if perc == True:
-    savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617_perc.png'
+    savename = 'ts_change_'+varstr+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617_perc.png'
 else:
-    savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617.png'
+    savename = 'ts_change_'+varstr+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617.png'
 
 fig.savefig(figpath+savename,bbox_inches='tight')

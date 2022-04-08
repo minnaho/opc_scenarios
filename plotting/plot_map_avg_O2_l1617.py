@@ -27,8 +27,8 @@ plt.ion()
 perc = True
 avg = False
 
-dp_layer = 40 # choose depth layer, 25 = 50 m
-depth = 80
+dp_layer = 25 # choose depth layer, 25 = 50 m
+depth = dp_layer*2
 
 # avg maps
 outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
@@ -37,7 +37,7 @@ filename = 'ext_0_200_'
 savepath = './figs/maps/'
 
 # month or season
-timename = 'spring1998'
+timename = 'spring1999'
 
 timeunit = 'days since 1997-08-01'
 
@@ -51,7 +51,7 @@ title_exp = ['PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
 # roms var
 var_nc = 'var'
 varstr = 'O2'
-cblabel = varstr+' mmol m$^{-2}$'
+cblabel = varstr+' mmol m$^{-3}$'
 if perc == True:
     cblabel = varstr+' % change'
 
@@ -109,18 +109,14 @@ coast_10m = cpf.NaturalEarthFeature('physical','coastline','10m')
 # max and min of color bar
 if var_nc == 'var':
     if perc == True:
-        # 1998
         v_max = 10
         v_min = -10
-        # 1999
-        #v_max = 50
-        #v_min = -30
         if avg == True:
             v_max = 15
             v_min = -15
     else:
-        v_max = 150
-        v_min = -10
+        v_max = 15
+        v_min = -15
 
 
 fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))

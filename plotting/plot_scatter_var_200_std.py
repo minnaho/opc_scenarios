@@ -1,59 +1,43 @@
-# plot timeseries of integrated and
-# sliced varibles
-# compare to loads1617 scenario
-import os
+# sum up all negative values in a mask
+# used to see impact of treatment level on oxygen
+# make my own 5-10 km mask circles?
 import sys
+import os
 sys.path.append('/data/project3/minnaho/global/')
-import l2grid
-import runmean
+import l2grid as l2grid
 import numpy as np
 from netCDF4 import Dataset,num2date
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
+# plot fresh vs nutrients vs control vs full
 plt.ion()
 
-region_name = 'mask3'
-var = 'biomass'
-var_nc = 'var'
-dp = '100'
-perc = False
+savepath = './figs/scatter/'
+region_name = 'grid'
 
-ncpath = '/data/project6/minnaho/opc_scenarios/ts_int_sli/'
-filest = 'concat_int_'+dp+'m_'
+# ROMS output location
+outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
 
-fileen = '_'+var+'.nc'
+# roms var
+var_name = 'O2' 
+var_nc = 'var' 
+#var_name = 'omega_pH' 
+#var_nc = 'pH' 
+cblabel = 'mmol '+var_name+' m$^{-3}$'
 
-cntrlnc = filest+'l1617'+fileen
-cntrl_var = np.squeeze(Dataset(ncpath+cntrlnc,'r').variables[var_nc])
+year_month = 'spring1999'
 
-figpath = './figs/ts/'
+filest = 'ext_0_200_'+var_name+'_'+year_month+'_'
+fileen = '.nc'
 
-if perc == True:
-    ylabel = '% change'
-else:
-    ylabel = 'mmol change'
-    
-
-# scenario names
-#exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['PNDN_only','pndn50','pndn90']
-#title_exp = ['PNDN only','PNDN 50','PNDN 90']
-exp = ['FNDN_only','fndn50','fndn90']
-title_exp = ['FNDN only','FNDN 50','FNDN 90']
-
-time_units = 'days since 1997-11-01'
-
-dtplt = num2date(np.arange(cntrl_var.shape[0]),time_units,only_use_cftime_datetimes=False,only_use_python_datetimes=True)
-
-fpath = []
-for e_i in range(len(exp)):
-    fpath.append(ncpath+filest+exp[e_i]+fileen)
-
-mask_nc = l2grid.mask_nc
+# scenario names 
+exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+#exp = ['l1617','PNDN_only','FNDN_only']
+#title_exp = ['Loads 16-17','PNDN only','FNDN only']
 
 # region masks
+mask_nc = l2grid.mask_nc
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
 mask_nsd = np.array(region_mask.variables['mask_nsd'])
@@ -97,6 +81,7 @@ mask7[mask7==0] = np.nan
 mask8[mask8==0] = np.nan
 mask9[mask9==0] = np.nan
 
+
 if region_name == 'ssd':
     mask_mult = mask_ssd
     regtitle = 'South San Diego'
@@ -118,12 +103,16 @@ if region_name == 'v':
 if region_name == 'sb':
     mask_mult = mask_sb
     regtitle = 'Santa Barbara'
-if region_name == 'grid': # full L2 grid
+if region_name == 'scb': # full L2 grid
     mask_mult = mask_nc
     regtitle = 'SCB'
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
+if region_name == 'grid':
+    mask_mult = mask_nc
+    regtitle = 'full SCB'
+
 if region_name == 'mask0':
     mask_mult = mask0
     regtitle = region_name
@@ -155,62 +144,57 @@ if region_name == 'mask9':
     mask_mult = mask9
     regtitle = region_name
 
-# apply mask and average for control
-cntrl_mask = cntrl_var*mask_mult
-cntrl_avg = np.nanmean(np.nanmean(cntrl_mask,axis=1),axis=1)
 
-# plotting
-axisfont = 16
-figw = 14
-figh = 10
+fpath = []
+for e_i in range(len(exp)):
+    fpath.append(outpath+filest+exp[e_i]+fileen)
 
-if perc == False:
-    v_max = 75
-    v_min = -150
+# read in control to subtract from
+roms_cnt = np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
+
+figw = 12
+figh = 4
+
+axis_tick_size = 14
+
+if var_name == 'O2':
+    savename = 'sum_neg_'+var_name+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'_std.png'
 else:
-    v_max = 40
-    v_min = -35
+    savename = 'sum_neg_'+var_nc+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'_std.png'
 
-# moving average 7 days - shorten date array
-dtplt = dtplt[1:-5]
-
-fig,ax = plt.subplots(len(exp),1,figsize=[figw,figh])
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
-    roms_var = np.squeeze(np.array(Dataset(fpath[n_i],'r').variables[var_nc]))*mask_mult
-    # multiply by mask then average over region
-    roms_avg = np.nanmean(np.nanmean(roms_var,axis=1),axis=1)
+    roms_var_read = np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
+    roms_var = roms_var_read - roms_cnt
+    # sum up all negative values then make it a positive number to plot
+    roms_var[roms_var>=0] = 0
+    roms_neg = np.nansum(roms_var)*-1
 
-    if perc == True:
-        roms_sub = ((roms_avg-cntrl_avg)/cntrl_avg)*100
-    else:
-        roms_sub = roms_avg-cntrl_avg
-    
-    roms_plt = runmean.running_mean(roms_sub,7)
+    ax.scatter(n_i,roms_neg)
+    roms_std = np.nanstd(np.squeeze(np.nansum(np.nansum(roms_var,axis=2),axis=2)))
+    ax.errorbar(n_i,roms_neg,yerr=roms_std,ecolor='k',capsize=3)
 
-    ax[n_i].plot(dtplt,roms_plt,color='k')
-    ax[n_i].fill_between(dtplt,roms_plt,where=roms_plt<0,color='blue',alpha=0.5)
-    ax[n_i].fill_between(dtplt,roms_plt,where=roms_plt>0,color='yellow',alpha=0.5)
-    ax[n_i].set_title(title_exp[n_i],fontsize=axisfont)
-    ax[n_i].plot(dtplt,np.ones(roms_plt.shape[0])*0,color='k',linestyle='--')
-    ax[n_i].set_ylim([v_min,v_max])
-    #if perc == False:
-    #    tick_spacingy = 100
-    #else:
-    #    tick_spacingy = 30
-    #ax[n_i].yaxis.set_major_locator(ticker.MultipleLocator(tick_spacingy))
-
-    ax[n_i].set_ylabel(ylabel,fontsize=axisfont)
-    ax[n_i].tick_params(axis='both',which='major',labelsize=axisfont)
-    ax[n_i].yaxis.set_ticks_position('both')
-    ax[n_i].xaxis.set_ticks_position('both')
-    if n_i < len(exp)-1:
-        ax[n_i].xaxis.set_ticklabels([])
-
-if perc == True:
-    savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617_perc.png'
+ax.set_yscale('log')
+#ax.set_ybound(lower=3E5,upper=5E7)
+ax.set_xticks(range(len(exp)))
+ax.set_xticklabels(title_exp)
+ax.set_xlabel('Scenario',fontsize=axis_tick_size)
+if var_name == 'O2':
+    ax.set_ylabel('Sum of O2 change',fontsize=axis_tick_size)
 else:
-    savename = 'ts_change_'+var+'_'+dp+'_'+region_name+'_'+exp[n_i]+'_l1617.png'
+    ax.set_ylabel('Sum of '+var_nc+' change',fontsize=axis_tick_size)
+ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
+ax.tick_params(axis='both',which='minor',labelsize=axis_tick_size)
 
-fig.savefig(figpath+savename,bbox_inches='tight')
+if var_name == 'O2':
+    fig.suptitle('Sum of Negative O2 '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
+else:
+    fig.suptitle('Sum of Negative '+var_nc+' '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
+
+
+fig.savefig(savepath+savename,bbox_inches='tight')
+print(savename)
+#plt.close()
+

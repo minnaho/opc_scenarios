@@ -24,16 +24,36 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 plt.ion()
 
-perc = True
-avg = True
-change = False # absolute change
+perc = False
+avg = False
 
-dp_layer = 20 # choose depth layer, 25 = 50 m
-dp_avg0 = 15 # depth layers to average over 15 = 30 m
-dp_avg1 = 25 # depth layers to average over
-#dp_avg0 = 0 # depth layers to average over 15 = 30 m
-#dp_avg1 = 39 # depth layers to average over
+dp_layer = 40 # choose depth layer, 25 = 50 m
 depth = 80
+
+# avg maps
+outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
+filename = 'ext_0_200_'
+
+savepath = './figs/maps/'
+
+# month or season
+timename = 'spring1998'
+
+timeunit = 'days since 1997-08-01'
+
+#exp = ['l1617','PNDN_only','pndn50','pndn90']
+#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
+exp = ['l1617','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
+#exp = ['l1617']
+#title_exp = ['Loads 16-17']
+
+# roms var
+var_nc = 'pH'
+varstr = 'omega_pH'
+cblabel = var_nc+' change'
+if perc == True:
+    cblabel = var_nc+' % change'
 
 # color map
 #c_map = cmocean.cm.dense
@@ -42,31 +62,6 @@ depth = 80
 #c_map = cmocean.cm.deep
 #c_map = cmocean.cm.delta
 c_map = 'PRGn'
-
-# avg maps
-outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
-filename = 'ext_0_80_'
-
-savepath = './figs/maps/'
-
-# month or season
-timename = 'spring1999'
-
-timeunit = 'days since 1997-08-01'
-
-#exp = ['l1617','PNDN_only','pndn50','pndn90',]
-#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
-exp = ['l1617','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617']
-#title_exp = ['Loads 16-17']
-
-# roms var
-var_nc = 'var'
-varstr = 'DIN'
-cblabel = varstr+' mmol m$^{-2}$'
-if perc == True:
-    cblabel = varstr+' % change'
 
 # control scenario
 cntrl_nc = outpath+filename+varstr+'_'+timename+'_cntrl.nc'
@@ -112,56 +107,50 @@ lon_potw = np.array(major_nc.variables['longitude'])
 coast_10m = cpf.NaturalEarthFeature('physical','coastline','10m')
 
 # max and min of color bar
-if var_nc == 'var':
-    if perc == True:
-        # 1998
+if perc == True:
+    # 1998
+    v_max = 10
+    v_min = -10
+    # 1999
+    #v_max = 50
+    #v_min = -30
+    if avg == True:
         v_max = 15
         v_min = -15
-        # 1999
-        #v_max = 50
-        #v_min = -30
-        if avg == True:
-            v_max = 100
-            v_min = -100
-    if change == True:
-        v_max = 2
-        v_min = -2
-    else:
-        v_max = 10
-        v_min = 0
+else:
+    if var_nc == 'omega':
+        v_max = 0.2
+        v_min = -0.2
+    if var_nc == 'pH':
+        v_max = 0.03
+        v_min = -0.03
 
 
 fig,ax = plt.subplots(2,2,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
 for t_i in range(len(ncfiles)):
-    datanc = np.squeeze(Dataset(ncfiles[t_i],'r')['var'])
-    datanc[datanc>1E10] = np.nan
-    datanc[datanc<=0] = np.nan
+    datanc = Dataset(ncfiles[t_i],'r')
     if avg == True:
-        varrd = np.nanmean(datanc[dp_avg0:dp_avg1+1],axis=0)
+        varrd = np.nanmean(np.squeeze(np.array(datanc[var_nc])),axis=0)
     else:
-        varrd = datanc[dp_layer,:,:]
+        varrd = np.squeeze(np.array(datanc[var_nc]))[dp_layer,:,:]
     varrd[varrd>1E10] = np.nan
     varrd[varrd<=0] = np.nan
-    #varplt = varrd
     
-    cntrld = np.squeeze(Dataset(cntrl_nc,'r')['var'])
-    cntrld[cntrld>1E10] = np.nan
-    cntrld[cntrld<=0] = np.nan
+    cntrld = Dataset(cntrl_nc,'r')
     if avg == True:
-        cntrlv = np.nanmean(cntrld[dp_avg0:dp_avg1+1],axis=0)
+        cntrlv = np.nanmean(np.squeeze(np.array(cntrld[var_nc])),axis=0)
     else:
-        cntrlv = cntrld[dp_layer,:,:]
+        cntrlv = np.squeeze(np.array(cntrld[var_nc]))[dp_layer,:,:]
     cntrlv[cntrlv>1E10] = np.nan
     cntrlv[cntrlv<=0] = np.nan
-
+    
     if perc == True:    
         varplt = ((varrd - cntrlv)/cntrlv)*100
     else:    
         varplt = varrd - cntrlv
 
     # plot maps
-    #p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,vmin=v_min,vmax=v_max)
     p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
     #p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0))
     
@@ -210,21 +199,17 @@ p0 = ax.flat[1].get_position().get_points().flatten()
 p1 = ax.flat[3].get_position().get_points().flatten()
 cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
 
-#cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1i')
+#cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1f')
 cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical')
 cb.set_label(cblabel,fontsize=axis_tick_size)
 cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
 if perc == True:
-    savename = 'map_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
+    savename = 'map_'+str(depth)+'m_'+var_nc+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
     if avg == True:
-        savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
-elif avg == True:
-    savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'.png'
-elif change == True:
-    savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_change.png'
+        savename = 'map_avg_0_200_'+var_nc+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
 else:
-    savename = 'map_avg_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_abs.png'
+    savename = 'map_'+str(depth)+'m_'+var_nc+'_'+timename+'_'+region_name+'_'+exp[-1]+'_abs.png'
 
 plt.tight_layout()
 

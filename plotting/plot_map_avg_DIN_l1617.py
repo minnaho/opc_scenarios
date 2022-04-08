@@ -24,9 +24,8 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 plt.ion()
 
-perc = True
+perc = False
 avg = True
-change = False # absolute change
 
 dp_layer = 20 # choose depth layer, 25 = 50 m
 dp_avg0 = 15 # depth layers to average over 15 = 30 m
@@ -34,6 +33,31 @@ dp_avg1 = 25 # depth layers to average over
 #dp_avg0 = 0 # depth layers to average over 15 = 30 m
 #dp_avg1 = 39 # depth layers to average over
 depth = 80
+
+# avg maps
+outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
+filename = 'ext_0_80_'
+
+savepath = './figs/maps/'
+
+# month or season
+timename = 'spring1998'
+
+timeunit = 'days since 1997-08-01'
+
+exp = ['PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+title_exp = ['PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+#exp = ['l1617','FNDN_only','fndn50','fndn90']
+#title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
+#exp = ['l1617']
+#title_exp = ['Loads 16-17']
+
+# roms var
+var_nc = 'var'
+varstr = 'DIN'
+cblabel = varstr+' mmol m$^{-3}$'
+if perc == True:
+    cblabel = varstr+' % change'
 
 # color map
 #c_map = cmocean.cm.dense
@@ -43,33 +67,8 @@ depth = 80
 #c_map = cmocean.cm.delta
 c_map = 'PRGn'
 
-# avg maps
-outpath = '/data/project6/minnaho/opc_scenarios/ext_depth/'
-filename = 'ext_0_80_'
-
-savepath = './figs/maps/'
-
-# month or season
-timename = 'spring1999'
-
-timeunit = 'days since 1997-08-01'
-
-#exp = ['l1617','PNDN_only','pndn50','pndn90',]
-#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
-exp = ['l1617','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617']
-#title_exp = ['Loads 16-17']
-
-# roms var
-var_nc = 'var'
-varstr = 'DIN'
-cblabel = varstr+' mmol m$^{-2}$'
-if perc == True:
-    cblabel = varstr+' % change'
-
 # control scenario
-cntrl_nc = outpath+filename+varstr+'_'+timename+'_cntrl.nc'
+cntrl_nc = outpath+filename+varstr+'_'+timename+'_l1617.nc'
 
 
 # outputs
@@ -99,7 +98,7 @@ lon_max = np.nanmax(lon_nc)
 
 extent = [lon_min,lon_max,lat_min,lat_max]
 
-figw = 14
+figw = 18
 figh = 10
 
 axis_tick_size = 16
@@ -121,17 +120,14 @@ if var_nc == 'var':
         #v_max = 50
         #v_min = -30
         if avg == True:
-            v_max = 100
-            v_min = -100
-    if change == True:
-        v_max = 2
-        v_min = -2
+            v_max = 50
+            v_min = -50
     else:
-        v_max = 10
-        v_min = 0
+        v_max = 1
+        v_min = -1
 
 
-fig,ax = plt.subplots(2,2,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
+fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
 for t_i in range(len(ncfiles)):
     datanc = np.squeeze(Dataset(ncfiles[t_i],'r')['var'])
@@ -187,12 +183,7 @@ for a_i in range(len(ax.flat)):
     gl.ylabels_right = False
     gl.xlabel_style = {'size':axis_tick_size}
     gl.ylabel_style = {'size':axis_tick_size}
-    if a_i == 0:
-        gl.xlabels_bottom = False
-    if a_i == 1:
-        gl.xlabels_bottom = False
-        gl.ylabels_left = False
-    if a_i == 3:
+    if a_i >= 1 and a_i != 3:
         gl.ylabels_left = False
     #step_lon = .4
     #step_lat = .2
@@ -206,25 +197,22 @@ for a_i in range(len(ax.flat)):
     gl.xformatter = LONGITUDE_FORMATTER
 
 # colorbar
-p0 = ax.flat[1].get_position().get_points().flatten()
-p1 = ax.flat[3].get_position().get_points().flatten()
+p0 = ax.flat[2].get_position().get_points().flatten()
+p1 = ax.flat[5].get_position().get_points().flatten()
 cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
 
-#cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1i')
 cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical')
 cb.set_label(cblabel,fontsize=axis_tick_size)
 cb.ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
 if perc == True:
-    savename = 'map_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
+    savename = 'map_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_l1617_perc.png'
     if avg == True:
-        savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_perc.png'
+        savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_l1617_perc.png'
 elif avg == True:
-    savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'.png'
-elif change == True:
-    savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_change.png'
+    savename = 'map_avg_'+str(dp_avg0*2)+'_'+str(dp_avg1*2)+'_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_l1617_abs.png'
 else:
-    savename = 'map_avg_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_abs.png'
+    savename = 'map_'+str(depth)+'m_'+varstr+'_'+timename+'_'+region_name+'_'+exp[-1]+'_l1617_abs.png'
 
 plt.tight_layout()
 

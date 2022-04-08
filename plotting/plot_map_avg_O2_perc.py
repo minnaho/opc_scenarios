@@ -37,14 +37,14 @@ filename = 'ext_0_200_'
 savepath = './figs/maps/'
 
 # month or season
-timename = 'spring1998'
+timename = 'spring1999'
 
 timeunit = 'days since 1997-08-01'
 
-#exp = ['l1617','PNDN_only','pndn50','pndn90']
-#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
-exp = ['l1617','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
+exp = ['l1617','PNDN_only','pndn50','pndn90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
+#exp = ['l1617','FNDN_only','fndn50','fndn90']
+#title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
 #exp = ['l1617']
 #title_exp = ['Loads 16-17']
 

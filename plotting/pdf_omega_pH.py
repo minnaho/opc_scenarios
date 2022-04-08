@@ -7,12 +7,16 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
 roms_path = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
-savepath = './figs/pdf/'
+savepath = '/data/project6/minnaho/opc_scenarios/pdf_npy/'
 
 region_name = 'grid'
 
-varnc = 'var'
-varstr = 'O2'
+varnc = 'pH'
+varstr = 'omega_pH'
+
+# min and max of variable
+bmin = 6
+bmax = 9
 
 # choose years
 start_year = 1999
@@ -30,10 +34,9 @@ end_month = 11
 #exp = ['pndn50']
 #exp = ['pndn90']
 #exp = ['FNDN_only']
-#exp = ['fndn50']
-exp = ['fndn90']
+exp = ['fndn50']
+#exp = ['fndn90']
 
-savename = 'pdf_0_200_'+varstr+'_Y'+str(start_year)+'M'+'%02d'%start_month+'_M'+'%02d'%end_month
 
 filest = 'ext_0_200_'+varstr+'_'
 
@@ -89,16 +92,6 @@ if region_name == 'coast':
 
 nbins = 500
 
-#ext_0_80_O2_Y1998M01_12_l1617.nc
-#O2
-#amin
-#96.9814829270808
-#amax
-#433.03709566462487
-# bin max and min
-bmin = 80
-bmax = 450
-
 # number of non-nan values 
 flt = np.ones((len(exp)))*0
 
@@ -147,29 +140,7 @@ for y_i in range(start_year,end_year+1):
                 flt[e_i] += np.where(~np.isnan(datanc.flatten()))[0].shape[0]
                 n_p[e_i] += n_d
 
-np.save(roms_path+'n_p_count_'+str(end_year)+'_'+exp[-1]+'.npy',n_p)
-np.save(roms_path+'flt_nonan_'+str(end_year)+'_'+exp[-1]+'.npy',flt)
-np.save(roms_path+'bin_p_'+str(end_year)+'_'+exp[-1]+'.npy',bin_p)
+np.save(savepath+'n_p_count_'+varnc+'_'+str(end_year)+'_'+exp[-1]+'.npy',n_p)
+np.save(savepath+'flt_nonan_'+varnc+'_'+str(end_year)+'_'+exp[-1]+'.npy',flt)
+np.save(savepath+'bin_p_'+varnc+'_'+str(end_year)+'_'+exp[-1]+'.npy',bin_p)
 
-'''
-figw = 12
-figh = 8
-axisfont = 16
-cplt = ['green','blue','orange','orange','orange','gray','gray','gray']
-lsty = ['-','-','-','--',':','-','--',':']
-
-fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-for e_i in range(len(exp)):
-    ax.plot(bins_p,n_p[e_i]/flt[e_i],color=cplt[e_i],linestyle=lsty[e_i],linewidth=1.5,label=title_exp[e_i])
-
-ax.legend(fontsize=axifont)
-ax.set_xlabel('O2 mmol/m3',fontsize=axisfont)
-ax.set_ylabel('PDF',fontsize=axisfont)
-ax.set_title(regtitle+' O2 PDF '+str(start_year)+'/'+'%02d'%start_month+'-'+str(end_year)+'/'+'%02d'%end_month,fontsize=axisfont)
-
-ax.tick_params(axis='both',which='major',labelsize=axisfont)
-ax.yaxis.set_ticks_position('both')
-ax.xaxis.set_ticks_position('both')
-
-plt.savefig(savepath+savename+'.png',bbox_inches='tight')
-'''

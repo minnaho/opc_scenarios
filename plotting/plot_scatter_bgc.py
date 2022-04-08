@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'coast'
+region_name = 'grid'
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
@@ -24,15 +24,14 @@ var_name = 'npp'
 var_nc = 'var_int' 
 cblabel = 'mmol m$^{-3}$ s$^{-1}$'
 
-year_month = 'Y1999_M10_11'
-timename = 'Fall 1999'
+year_month = 'Y1998_M04_06'
+timename = 'Spring 1998'
 
 # scenario names 
-#exp = ['PNDN_only','fndn90']
-exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617','PNDN_only','fndn90']
-#title_exp = ['Loads 16-17','PNDN only','FNDN 90']
+#exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+exp = ['loads1617','PNDN_only','FNDN_only']
+title_exp = ['Loads 16-17','PNDN only','FNDN only']
 
 filest = 'int_avg_100m_50m_'
 fileen = '_'+var_name+'_'+year_month+'.nc'
@@ -57,6 +56,31 @@ mask_sp[mask_sp==0] = np.nan
 mask_sm[mask_sm==0] = np.nan
 mask_v[mask_v==0] = np.nan
 mask_sb[mask_sb==0] = np.nan
+
+# masks 0-9
+masknum = Dataset('/data/project1/minnaho/make_masks/mask_gridL2.nc','r')
+mask0 = np.array(masknum.variables['mask0'])
+mask1 = np.array(masknum.variables['mask1'])
+mask2 = np.array(masknum.variables['mask2'])
+mask3 = np.array(masknum.variables['mask3'])
+mask4 = np.array(masknum.variables['mask4'])
+mask5 = np.array(masknum.variables['mask5'])
+mask6 = np.array(masknum.variables['mask6'])
+mask7 = np.array(masknum.variables['mask7'])
+mask8 = np.array(masknum.variables['mask8'])
+mask9 = np.array(masknum.variables['mask9'])
+
+mask0[mask0==0] = np.nan
+mask1[mask1==0] = np.nan
+mask2[mask2==0] = np.nan
+mask3[mask3==0] = np.nan
+mask4[mask4==0] = np.nan
+mask5[mask5==0] = np.nan
+mask6[mask6==0] = np.nan
+mask7[mask7==0] = np.nan
+mask8[mask8==0] = np.nan
+mask9[mask9==0] = np.nan
+
 
 if region_name == 'ssd':
     mask_mult = mask_ssd
@@ -86,6 +110,37 @@ if region_name == 'grid':
     mask_mult = mask_nc
     regtitle = 'full SCB'
 
+if region_name == 'mask0':
+    mask_mult = mask0
+    regtitle = region_name
+if region_name == 'mask1':
+    mask_mult = mask1
+    regtitle = region_name
+if region_name == 'mask2':
+    mask_mult = mask2
+    regtitle = region_name
+if region_name == 'mask3':
+    mask_mult = mask3
+    regtitle = region_name
+if region_name == 'mask4':
+    mask_mult = mask4
+    regtitle = region_name
+if region_name == 'mask5':
+    mask_mult = mask5
+    regtitle = region_name
+if region_name == 'mask6':
+    mask_mult = mask6
+    regtitle = region_name
+if region_name == 'mask7':
+    mask_mult = mask7
+    regtitle = region_name
+if region_name == 'mask8':
+    mask_mult = mask8
+    regtitle = region_name
+if region_name == 'mask9':
+    mask_mult = mask9
+    regtitle = region_name
+
 fpath = []
 for e_i in range(len(exp)):
     fpath.append(outpath+filest+exp[e_i]+fileen)
@@ -95,7 +150,7 @@ figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'.png'
+savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):

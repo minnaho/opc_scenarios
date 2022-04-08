@@ -34,16 +34,14 @@ depth = '30_45'
 # month or season
 
 start_year = 1997
-end_year = 1998
+end_year = 1999
 
 start_month = 11
-end_month = 6
+end_month = 11
 
-exp = ['cntrl','l1617','PNDN_only','FNDN_only',
-       'pndn50','fndn90']
-
-title_exp = ['CTRL','Loads 16-17','PNDN only','FNDN only',
-             'PNDN 50','FNDN 90']
+exp = ['cntrl','l1617','PNDN_only','pndn50','pndn90','FNDN_only',
+       'fndn50','fndn90']
+title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
 
 # roms var
 var_nc = 'NH4'
@@ -78,8 +76,8 @@ lon_max = -117.82
 
 extent = [lon_min,lon_max,lat_min,lat_max]
 
-figw = 16
-figh = 5
+figw = 18
+figh = 6
 
 axis_tick_size = 16
 
@@ -138,7 +136,7 @@ for y in range(start_year,end_year+1):
                 ndays = 28
         for d in list(range(1,ndays+1)):
             year_month = 'Y'+str(y)+'M'+'%02d'%m+'D'+'%02d'%d
-            fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
+            fig,ax = plt.subplots(2,4,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
             for e_i in range(len(exp)):
                 datanc = Dataset(outpath+filename+'_'+depth+'_'+var_nc+'_'+year_month+'_'+exp[e_i]+'.nc','r')
@@ -167,10 +165,10 @@ for y in range(start_year,end_year+1):
                 gl.ylabel_style = {'size':axis_tick_size}
                 if e_i == 0:
                     gl.xlabels_bottom = False
-                if e_i == 1 or e_i == 2:
+                if e_i == 1 or e_i == 2 or e_i == 3:
                     gl.xlabels_bottom = False
                     gl.ylabels_left = False
-                if e_i == 4 or e_i == 5 or e_i == 6:
+                if e_i == 5 or e_i == 6 or e_i == 7:
                     gl.ylabels_left = False
                 step_lon = .4
                 step_lat = .2
@@ -182,8 +180,8 @@ for y in range(start_year,end_year+1):
                 gl.xformatter = LONGITUDE_FORMATTER
 
             # colorbar
-            p0 = ax.flat[2].get_position().get_points().flatten()
-            p1 = ax.flat[5].get_position().get_points().flatten()
+            p0 = ax.flat[3].get_position().get_points().flatten()
+            p1 = ax.flat[7].get_position().get_points().flatten()
             cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
             
             cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',format='%.1f')
@@ -192,7 +190,7 @@ for y in range(start_year,end_year+1):
             
             fig.suptitle('Average NH4 30-45 m depth '+str(y)+'-'+'%02d'%m+'-'+'%02d'%d,fontsize=axis_tick_size)
 
-            savename = 'map6_'+var_nc+'_'+depth+'_'+year_month
+            savename = 'map8_'+var_nc+'_'+depth+'_'+year_month
             
             plt.tight_layout()
             
