@@ -14,28 +14,29 @@ savepath = './figs/pdf/'
 varnc = 'var'
 
 varname = 'int_100m_biomass'
-exp = '1999'
+#exp = '1998'
 
 # nsd, ssd, oc, sp, sm, v, sb, or grid or coast (15 km)
-region_name = 'grid'
+region_name = 'coast'
 
-#savename = 'pdf_fullts_'+varname+'_'+exp+'_0bin_'+region_name
-savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
+# percentile of cntrl to take to compare frequencies
+perc = 75
+
+savename = 'freq_pdf_fullts_'+varname+'_0bin_'+region_name+'_'+str(perc)
+#savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
 
 # grid variables
 mask_nc = l2grid.mask_nc
 
-#dtstr = 'Y1998M01_12'
-
 # read variables
-l1617_nc = Dataset(roms_path+'concat_int_100m_l1617_biomass_Y1999M01_11.nc','r')
-cntrl_nc = Dataset(roms_path+'concat_int_100m_cntrl_biomass_Y1999M01_11.nc','r')
-fulll_nc = Dataset(roms_path+'concat_int_100m_fndn90_biomass_Y1999M01_11.nc','r')
-exp01_nc = Dataset(roms_path+'concat_int_100m_PNDN_only_biomass_Y1999M01_11.nc','r')
-exp02_nc = Dataset(roms_path+'concat_int_100m_FNDN_only_biomass_Y1999M01_11.nc','r')
-exp03_nc = Dataset(roms_path+'concat_int_100m_pndn50_biomass_Y1999M01_11.nc','r')
-exp04_nc = Dataset(roms_path+'concat_int_100m_pndn90_biomass_Y1999M01_11.nc','r')
-exp05_nc = Dataset(roms_path+'concat_int_100m_fndn50_biomass_Y1999M01_11.nc','r')
+l1617_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_l1617.nc','r')
+cntrl_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_cntrl.nc','r')
+fulll_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_fndn90.nc','r')
+exp01_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_PNDN_only.nc','r')
+exp02_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_FNDN_only.nc','r')
+exp03_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_pndn50.nc','r')
+exp04_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_pndn90.nc','r')
+exp05_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_fndn50.nc','r')
 
 l1617_var = np.array(l1617_nc.variables[varnc])
 cntrl_var = np.array(cntrl_nc.variables[varnc])
@@ -160,40 +161,75 @@ n_3 = np.append(n_3,0)
 n_4 = np.append(n_4,0)
 n_5 = np.append(n_5,0)
 
+# calculate frequency above xth percentile of cntrl
+
+cntrlflat = cntrl_var.flatten()
+cntrlperc = np.nanpercentile(cntrlflat,perc)
+
+cntrl_ind = np.where(bins_c>cntrlperc)
+l1617_ind = np.where(bins_l>cntrlperc)
+pndnon_ind = np.where(bins_1>cntrlperc)
+pndn50_ind = np.where(bins_3>cntrlperc)
+pndn90_ind = np.where(bins_4>cntrlperc)
+fndnon_ind = np.where(bins_2>cntrlperc)
+fndn50_ind = np.where(bins_5>cntrlperc)
+fndn90_ind = np.where(bins_f>cntrlperc)
+
+cntrl_freq =  np.nansum((n_c/flt_c)[cntrl_ind])
+l1617_freq =  np.nansum((n_l/flt_c)[l1617_ind])
+pndnon_freq = np.nansum((n_1/flt_c)[pndnon_ind])
+pndn50_freq = np.nansum((n_3/flt_c)[pndn50_ind])
+pndn90_freq = np.nansum((n_4/flt_c)[pndn90_ind])
+fndnon_freq = np.nansum((n_2/flt_c)[fndnon_ind])
+fndn50_freq = np.nansum((n_5/flt_c)[fndn50_ind])
+fndn90_freq = np.nansum((n_f/flt_c)[fndn90_ind])
+
+
 # plot
 #plt.ion()
 
-figw = 12
+figw = 18
 figh = 8
 axisfont = 16
 
 
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
-# remove first bin that has 0 values 
-# divide by shape to get probability
-#ax.plot(bins_c[1:],n_c[1:]/flt_c,color='green',linewidth=1.5,label='CTRL')
-#ax.plot(bins_l[1:],n_l[1:]/flt_l,color='blue',linestyle=':',linewidth=1.5,label='16-17 loads')
-#ax.plot(bins_1[1:],n_1[1:]/flt_1,color='orange',linestyle='--',linewidth=1.5,label='PNDN only')
-#ax.plot(bins_3[1:],n_3[1:]/flt_3,color='lightblue',linestyle='--',linewidth=1.5,label='PNDN 50')
-#ax.plot(bins_2[1:],n_2[1:]/flt_2,color='gray',linestyle='--',linewidth=1.5,label='FNDN only')
-#ax.plot(bins_f[1:],n_f[1:]/flt_f,color='black',linewidth=1.5,label='FNDN 90')
+#title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
 
-# plot all bins
-ax.plot(bins_c,n_c/flt_c,color='green',linewidth=1.5,label='CTRL')
-ax.plot(bins_l,n_l/flt_l,color='blue',linestyle=':',linewidth=1.5,label='16-17 loads')
-ax.plot(bins_1,n_1/flt_1,color='orange',linestyle='-',linewidth=1.5,label='PNDN only')
-ax.plot(bins_3,n_3/flt_3,color='orange',linestyle='--',linewidth=1.5,label='PNDN 50')
-ax.plot(bins_4,n_4/flt_4,color='orange',linestyle=':',linewidth=1.5,label='PNDN 90')
-ax.plot(bins_2,n_2/flt_2,color='gray',linestyle='-',linewidth=1.5,label='FNDN only')
-ax.plot(bins_5,n_5/flt_5,color='gray',linestyle='--',linewidth=1.5,label='FNDN 50')
-ax.plot(bins_f,n_f/flt_f,color='gray',linestyle=':',linewidth=1.5,label='FNDN 90')
+n_i = range(len(title_exp))
 
-ax.set_xlim([-10,500])
+#ax.bar(n_i[0],cntrl_freq)
+#ax.bar(n_i[1],l1617_freq)
+#ax.bar(n_i[2],pndnon_freq)
+#ax.bar(n_i[3],pndn50_freq)
+#ax.bar(n_i[4],pndn90_freq)
+#ax.bar(n_i[5],fndnon_freq)
+#ax.bar(n_i[6],fndn50_freq)
+#ax.bar(n_i[7],fndn90_freq)
 
-ax.legend(fontsize=axisfont)
-ax.set_xlabel('integrated biomass 100 m mmol/m2',fontsize=axisfont)
-ax.set_ylabel('PDF',fontsize=axisfont)
-ax.set_title(regtitle+' integrated biomass PDF',fontsize=axisfont)
+#ax.bar(n_i[0],l1617_freq)
+#ax.bar(n_i[1],pndnon_freq)
+#ax.bar(n_i[2],pndn50_freq)
+#ax.bar(n_i[3],pndn90_freq)
+#ax.bar(n_i[4],fndnon_freq)
+#ax.bar(n_i[5],fndn50_freq)
+#ax.bar(n_i[6],fndn90_freq)
+
+ax.scatter(n_i[0],l1617_freq)
+ax.scatter(n_i[1],pndnon_freq)
+ax.scatter(n_i[2],pndn50_freq)
+ax.scatter(n_i[3],pndn90_freq)
+ax.scatter(n_i[4],fndnon_freq)
+ax.scatter(n_i[5],fndn50_freq)
+ax.scatter(n_i[6],fndn90_freq)
+
+ax.set_xticks(range(len(title_exp)))
+ax.set_xticklabels(title_exp)
+
+ax.set_ylabel('Integrated Biomass Frequency > '+str(perc)+'th CTRL percentile',fontsize=axisfont)
+#ax.set_title(regtitle+' integrated biomass PDF',fontsize=axisfont)
 ax.tick_params(axis='both',which='major',labelsize=axisfont)
-plt.savefig(savepath+savename+'.png',bbox_inches='tight')
+#plt.savefig(savepath+savename+'.png',bbox_inches='tight')
+plt.savefig(savepath+savename+'_l1617_scatter.png',bbox_inches='tight')

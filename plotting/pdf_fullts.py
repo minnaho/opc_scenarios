@@ -14,13 +14,13 @@ savepath = './figs/pdf/'
 varnc = 'var'
 
 varname = 'int_100m_biomass'
-exp = '1999'
+exp = '1998'
 
 # nsd, ssd, oc, sp, sm, v, sb, or grid or coast (15 km)
 region_name = 'grid'
 
-#savename = 'pdf_fullts_'+varname+'_'+exp+'_0bin_'+region_name
-savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
+savename = 'pdf_fullts_'+varname+'_'+exp+'_0bin_'+region_name
+#savename = 'pdf_'+varname+'_'+exp+'_0bin_'+region_name
 
 # grid variables
 mask_nc = l2grid.mask_nc
@@ -28,14 +28,14 @@ mask_nc = l2grid.mask_nc
 #dtstr = 'Y1998M01_12'
 
 # read variables
-l1617_nc = Dataset(roms_path+'concat_int_100m_l1617_biomass_Y1999M01_11.nc','r')
-cntrl_nc = Dataset(roms_path+'concat_int_100m_cntrl_biomass_Y1999M01_11.nc','r')
-fulll_nc = Dataset(roms_path+'concat_int_100m_fndn90_biomass_Y1999M01_11.nc','r')
-exp01_nc = Dataset(roms_path+'concat_int_100m_PNDN_only_biomass_Y1999M01_11.nc','r')
-exp02_nc = Dataset(roms_path+'concat_int_100m_FNDN_only_biomass_Y1999M01_11.nc','r')
-exp03_nc = Dataset(roms_path+'concat_int_100m_pndn50_biomass_Y1999M01_11.nc','r')
-exp04_nc = Dataset(roms_path+'concat_int_100m_pndn90_biomass_Y1999M01_11.nc','r')
-exp05_nc = Dataset(roms_path+'concat_int_100m_fndn50_biomass_Y1999M01_11.nc','r')
+l1617_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_l1617.nc','r')
+cntrl_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_cntrl.nc','r')
+fulll_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_fndn90.nc','r')
+exp01_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_PNDN_only.nc','r')
+exp02_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_FNDN_only.nc','r')
+exp03_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_pndn50.nc','r')
+exp04_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_pndn90.nc','r')
+exp05_nc = Dataset(roms_path+'concat_fullts_int_100m_biomass_fndn50.nc','r')
 
 l1617_var = np.array(l1617_nc.variables[varnc])
 cntrl_var = np.array(cntrl_nc.variables[varnc])

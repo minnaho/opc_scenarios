@@ -8,7 +8,7 @@
 %% =================================================================== %%
 addpath(genpath('/data/project3/kesf/tools_matlab/matlab_paths/'))
 
-nbs=2 ; % NUMBER OF SCENARIOS
+nbs=1 ; % NUMBER OF SCENARIOS
 for scenario=1:nbs
 param
 %%%%%%%%%%%%%
@@ -18,7 +18,7 @@ param
 %%%%%%%%%%%%%
 %% DO THE MASK
 
-list1 = 0:20:300
+list1 = 320:20:600
 %list1 = 0 ;
 for dd = 1:length(list1)
 depthmin = list1(dd) ; % shallower limit

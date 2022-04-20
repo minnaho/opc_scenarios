@@ -22,19 +22,22 @@ outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
 # roms var
 var_name = 'npp' 
 var_nc = 'var_int' 
-cblabel = 'mmol m$^{-3}$ s$^{-1}$'
+cblabel = 'mmol m$^{-2}$ s$^{-1}$'
 
-year_month = 'Y1998_M04_06'
-timename = 'Spring 1998'
+#year_month = 'Y1998_M04_06'
+year_month = 'fullts'
+timename = '11/1997-11/1999'
 
 # scenario names 
-#exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-exp = ['loads1617','PNDN_only','FNDN_only']
-title_exp = ['Loads 16-17','PNDN only','FNDN only']
+exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+#exp = ['loads1617','PNDN_only','FNDN_only']
+#title_exp = ['Loads 16-17','PNDN only','FNDN only']
 
-filest = 'int_avg_100m_50m_'
-fileen = '_'+var_name+'_'+year_month+'.nc'
+#filest = 'int_avg_100m_50m_'
+filest = 'avg_fullts_int_avg_100m_50m_'
+#fileen = '_'+var_name+'_'+year_month+'.nc'
+fileen = '_'+var_name+'.nc'
 
 # region masks
 mask_nc = l2grid.mask_nc
@@ -163,7 +166,7 @@ for n_i in range(len(exp)):
 ax.set_xticks(range(len(exp)))
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
-ax.set_ylabel('Sum of '+var_name+' 100 m',fontsize=axis_tick_size)
+ax.set_ylabel('Integrated NPP 100 m '+cblabel,fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
 fig.suptitle('Integrated '+var_name+' '+timename+' '+regtitle,fontsize=axis_tick_size)

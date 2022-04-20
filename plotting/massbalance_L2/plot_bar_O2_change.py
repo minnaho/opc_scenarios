@@ -18,12 +18,17 @@ maskn = 10
 
 fname = 'budget_L2_mask'+str(maskn)+'_'+varstr+'_'
 
-exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-
 # experiment to compare to
-#compexp = 'loads1617'
-compexp = 'cntrl'
+compexp = 'loads1617'
+#compexp = 'cntrl'
+
+if compexp == 'cntrl':
+    exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+    title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+else:
+    exp = ['PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+    title_exp = ['PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+
 
 ncpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/'
 
@@ -36,14 +41,10 @@ s2d = 86400
 if compexp == 'cntrl':
     # read first file to get size of arrays
     datacomp = Dataset(ncpath+compexp+'/'+fname+str(0)+'_to_'+str(20)+'_'+compexp+'.nc','r')
-    v_min = -25
-    v_max = 25
     
 # l1617
 else:
     datacomp = Dataset(ncpath+exp[0]+'/'+fname+str(0)+'_to_'+str(20)+'_'+exp[0]+'.nc','r')
-    v_min = -5
-    v_max = 5
     
 timcomp = np.array(datacomp.variables['time'])
 datetimecomp = pd.to_datetime(timcomp-719529,unit='D')
@@ -96,30 +97,20 @@ axisfont = 16
 
 width = 0.2
 
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+x_ind = np.arange(len(exp))
 
-for e_i in range(len(exp)):
+ax.bar(x_ind,np.nansum(np.nansum(inv_arr,axis=1),axis=1)/(inv_arr.shape[1]*inv_arr.shape[2]),width=width)
+ax.set_xticks([width,1+width,2+width,3+width,4+width,5+width,6+width])
+ax.set_xticklabels(title_exp)
 
-    fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-    # cntrl
-    if compexp=='cntrl':
-        p_plt = ax.pcolormesh(timcompconv,list(range(dp0,dp1,dpstp)),np.transpose(inv_arr[e_i]),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
-        ax.set_title(varstr+' '+title_exp[e_i]+' - CTRL',fontsize=axisfont)
-    #loads1617 
-    else:
-        p_plt = ax.pcolormesh(timncconv,list(range(dp0,dp1,dpstp)),np.transpose(inv_arr[e_i]),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
-        ax.set_title(varstr+' '+title_exp[e_i]+' - Loads 16-17',fontsize=axisfont)
-    ax.invert_yaxis()
-    ax.set_ylabel('Depth',fontsize=axisfont)
-    ax.tick_params(axis='both',which='major',labelsize=axisfont)
-    ax.yaxis.set_ticks_position('both')
-    ax.xaxis.set_ticks_position('both')
-    p0 = ax.get_position().get_points().flatten()
-    p1 = ax.get_position().get_points().flatten()
-    cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
+#ax.scatter(x_ind,np.nansum(np.nansum(inv_arr,axis=1),axis=1)/(inv_arr.shape[1]*inv_arr.shape[2]))
+#ax.set_xticks(range(len(exp)))
+#ax.set_xticklabels(title_exp)
 
-    cb = fig.colorbar(p_plt,cax=cb_ax,orientation='vertical')
-    cb.set_label(cblabel,fontsize=axisfont)
-    cb.ax.tick_params(axis='both',which='major',labelsize=axisfont)
 
-    fig.savefig(savepath+savename+'_'+exp[e_i]+'_'+compexp+'.png',bbox_inches='tight')
+ax.tick_params(axis='both',which='major',labelsize=axisfont)
+ax.set_ylabel(varstr+' mmol/m3 change',fontsize=axisfont)
+fig.savefig('bar_O2_change'+'_'+compexp+'.png',bbox_inches='tight')
+#fig.savefig('scatter_O2_change'+'_'+compexp+'.png',bbox_inches='tight')
 

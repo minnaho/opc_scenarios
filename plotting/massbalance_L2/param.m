@@ -9,10 +9,10 @@ region= 1; % dont change
     hc = 250;
     sc_type = 'new2012'; % for my zlevs4!!
 bio=1 ; % 1 to activate biogeochemical rates calculation
-%vname = 'O2';  % name of the variable, O2, Alk, DIC , DON, ORG for sum of particulate matter
+vname = 'O2';  % name of the variable, O2, Alk, DIC , DON, ORG for sum of particulate matter
 %vname = 'C' ;
 %vname = 'NO3' ;
-vname = 'NH4' ;
+%vname = 'NH4' ;
 
 
 
@@ -25,7 +25,7 @@ msk=10  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 %% READ FILES
 %% MODEL OUTPUTS DIRECTOR
 if scenario==1
-repstr = 'fndn50';
+repstr = 'loads1617';
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 %repstr = 'cntrl';
 %rep_mod  = ['/data/project3/minnaho/postprocessing/cntrl_monthly'] ;
@@ -33,7 +33,7 @@ rep_his    = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];
 mkdir(rep_out)
 elseif scenario==2
-repstr = 'fndn90';
+repstr = 'l1617';
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 rep_his  = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];

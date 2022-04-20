@@ -176,7 +176,7 @@ for n_i in range(len(exp)):
 ax.set_xticks(range(len(exp)))
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
-ax.set_ylabel('Sum of O2 change mmol m$^{-2}$',fontsize=axis_tick_size)
+ax.set_ylabel('Sum of O2 change',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 ax.tick_params(axis='both',which='minor',labelsize=axis_tick_size)
 

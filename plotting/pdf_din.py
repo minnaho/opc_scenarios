@@ -6,16 +6,16 @@ import numpy as np
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
-roms_path = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
+roms_path = '/data/project6/minnaho/opc_scenarios/ext_depth/'
 savepath = '/data/project6/minnaho/opc_scenarios/pdf_npy/'
 
 region_name = 'grid'
 
 varnc = 'var'
-varstr = 'O2'
+varstr = 'DIN'
 
 # choose years
-start_year = 1999
+start_year = 1998
 end_year = 1999
 
 # choose months between 1 and 12
@@ -33,9 +33,7 @@ end_month = 11
 #exp = ['fndn50']
 exp = ['fndn90']
 
-savename = 'pdf_0_200_'+varstr+'_Y'+str(start_year)+'M'+'%02d'%start_month+'_M'+'%02d'%end_month
-
-filest = 'ext_0_200_'+varstr+'_'
+filest = 'ext_0_80_'+varstr+'_'
 
 # region masks
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
@@ -96,8 +94,8 @@ nbins = 500
 #amax
 #433.03709566462487
 # bin max and min
-bmin = 80
-bmax = 450
+bmin = 0
+bmax = 400
 
 # number of non-nan values 
 flt = np.ones((len(exp)))*0
@@ -147,9 +145,9 @@ for y_i in range(start_year,end_year+1):
                 flt[e_i] += np.where(~np.isnan(datanc.flatten()))[0].shape[0]
                 n_p[e_i] += n_d
 
-np.save(savepath+'n_p_count_'+str(end_year)+'_'+exp[-1]+'.npy',n_p)
-np.save(savepath+'flt_nonan_'+str(end_year)+'_'+exp[-1]+'.npy',flt)
-np.save(savepath+'bin_p_'+str(end_year)+'_'+exp[-1]+'.npy',bin_p)
+np.save(savepath+'din_n_p_count_'+str(end_year)+'_'+exp[-1]+'.npy',n_p)
+np.save(savepath+'din_flt_nonan_'+str(end_year)+'_'+exp[-1]+'.npy',flt)
+np.save(savepath+'din_bin_p_'+str(end_year)+'_'+exp[-1]+'.npy',bin_p)
 
 '''
 figw = 12

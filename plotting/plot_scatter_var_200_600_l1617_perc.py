@@ -18,6 +18,7 @@ region_name = 'grid'
 # ROMS output location
 #outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
 outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200_monthly/'
+outpath1 = '/data/project6/minnaho/opc_scenarios/ext_depth_600/'
 
 # roms var
 var_name = 'O2' 
@@ -30,12 +31,14 @@ year_month = 'fullts'
 #filest = 'ext_0_200_'+var_name+'_'+year_month+'_'
 filest = 'avg_fullts_0_200_'+var_name+'_'
 fileen = '.nc'
+filest1 = 'avg_fullts_200_600_'+var_name+'_'
+fileen1 = '.nc'
 
 # scenario names 
-exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617','PNDN_only','FNDN_only']
-#title_exp = ['Loads 16-17','PNDN only','FNDN only']
+#exp = ['l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+#title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+exp = ['l1617','PNDN_only','FNDN_only']
+title_exp = ['Loads 16-17','PNDN only','FNDN only']
 
 # region masks
 mask_nc = l2grid.mask_nc
@@ -103,9 +106,6 @@ if region_name == 'v':
 if region_name == 'sb':
     mask_mult = mask_sb
     regtitle = 'Santa Barbara'
-if region_name == 'scb': # full L2 grid
-    mask_mult = mask_nc
-    regtitle = 'SCB'
 if region_name == 'coast':
     mask_mult = mask_cst
     regtitle = '15 km coast'
@@ -144,43 +144,76 @@ if region_name == 'mask9':
     mask_mult = mask9
     regtitle = region_name
 
+pm_nc = l2grid.pm_nc
+pn_nc = l2grid.pn_nc
+
+mask_nc[mask_nc==0] = np.nan # get rid of land volumes
+xisize = (1/pm_nc)*mask_nc
+etasize = (1/pn_nc)*mask_nc
+
 fpath = []
 for e_i in range(len(exp)):
     fpath.append(outpath+filest+exp[e_i]+fileen)
 
+fpath1 = []
+for e_i in range(len(exp)):
+    fpath1.append(outpath1+filest1+exp[e_i]+fileen)
+
 # read in control to subtract from
 roms_cnt = np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
+roms_cnt1 = np.array(Dataset(outpath1+filest1+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
 
 figw = 12
 figh = 4
 
 axis_tick_size = 14
 
-savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'.png'
+savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'.png'
 #savename = 'sum_neg_'+var_name+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
     roms_var_read = np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
-    roms_var = roms_var_read - roms_cnt
-    # sum up all negative values then make it a positive number to plot
-    #roms_var[roms_var>=0] = 0
-    #roms_neg = np.nansum(roms_var)*-1
-    roms_neg = np.nansum(roms_var)
+    roms_var_read1 = np.array(Dataset(fpath1[n_i],'r').variables[var_nc])*mask_mult
 
-    ax.scatter(n_i,roms_neg)
+    roms_var_volw = np.nansum(roms_var_read*(roms_var_read.shape[1])*(xisize*etasize))/(roms_var_read.shape[1]*(np.nansum(xisize*etasize)))
+
+    #roms_var = roms_var_read - roms_cnt
+    #roms_var1 = roms_var_read1 - roms_cnt1
+
+    # take average
+    roms_neg_sum = np.nanmean(roms_var_read)
+
+    # normalize by number of depth slices
+    #roms_neg0 = np.nansum(roms_var)/roms_var.shape[1]
+    #roms_neg1 = np.nansum(roms_var1)/roms_var1.shape[1]
+
+    #roms_neg_sum = roms_neg0+roms_neg1
+
+    # divide by bight area to get volume
+    #roms_neg_sum = (roms_neg0+roms_neg1)/np.nansum(xisize*etasize)
+
+    if exp[n_i] == 'l1617':
+        roms_l = roms_neg_sum
+        print(exp[n_i]+': ',str(roms_l))
+    else: 
+        print(exp[n_i]+': ',str(roms_neg_sum))
+        #roms_neg = ((roms_neg_sum-roms_l)/roms_l)*100
+        roms_neg = roms_neg_sum-roms_l
+        ax.scatter(n_i,roms_neg)
 
 #ax.set_yscale('log')
 #ax.set_ybound(lower=3E5,upper=5E7)
-ax.set_xticks(range(len(exp)))
-ax.set_xticklabels(title_exp)
+ax.set_xticks(range(1,len(exp)))
+ax.set_xticklabels(title_exp[1:])
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
-ax.set_ylabel('Sum of O2 change mmol m$^{-2}$',fontsize=axis_tick_size)
+#ax.set_ylabel('Sum of O2 change mmol m$^{-2}$',fontsize=axis_tick_size)
+ax.set_ylabel('Average O2 change mg L$^{-1}$',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 ax.tick_params(axis='both',which='minor',labelsize=axis_tick_size)
 
-fig.suptitle('Sum of Negative O2 '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
+#fig.suptitle('Sum of Negative O2 '+year_month+' Average '+regtitle,fontsize=axis_tick_size)
 
 
 fig.savefig(savepath+savename,bbox_inches='tight')
