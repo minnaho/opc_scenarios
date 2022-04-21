@@ -22,17 +22,18 @@ outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
 # roms var
 var_name = 'npp' 
 var_nc = 'var_int' 
-cblabel = 'mmol m$^{-2}$ s$^{-1}$'
+cblabel = 'mmol m$^{-2}$ d$^{-1}$'
 
 #year_month = 'Y1998_M04_06'
 year_month = 'fullts'
 timename = '11/1997-11/1999'
 
 # scenario names 
-exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-#exp = ['loads1617','PNDN_only','FNDN_only']
-#title_exp = ['Loads 16-17','PNDN only','FNDN only']
+exp = ['PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+#title_exp = ['PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
+title_exp = ['50% N\nReduction','50% N\nReduction\n50% Recycle','50% N\nReduction\n90% Recycle','85% N\nReduction','85% N\nReduction\n50% Recycle','85% N\nReduction\n90% Recycle',]
+#exp = ['PNDN_only','FNDN_only']
+#title_exp = ['50% N\nReduction','85% N\nReduction']
 
 #filest = 'int_avg_100m_50m_'
 filest = 'avg_fullts_int_avg_100m_50m_'
@@ -154,29 +155,41 @@ fpath = []
 for e_i in range(len(exp)):
     fpath.append(outpath+filest+exp[e_i]+fileen)
 
+s2d = 86400
 
-figw = 12
+cntrl_var = np.squeeze(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_mean = np.nanmean(cntrl_var)*s2d
+l1617_var = np.squeeze(Dataset(outpath+filest+'loads1617'+fileen,'r').variables[var_nc])*mask_mult
+l1617_mean = np.nanmean(l1617_var)*s2d
+
+figw = 14
+#figw = 10
 figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'.png'
+savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'_bar_norm.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
     roms_var = np.squeeze(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
-    roms_neg = np.nanmean(roms_var)
+    roms_neg = np.nanmean(roms_var)*s2d
 
-    ax.scatter(n_i,roms_neg)
+    print(exp[n_i],str(roms_neg))
+    ax.bar(n_i,roms_neg-cntrl_mean,bottom=cntrl_mean)
 
+ax.set_ylim(bottom=cntrl_mean-(cntrl_mean*0.01),top=l1617_mean+(cntrl_mean*0.01))
 ax.set_xticks(range(len(exp)))
+ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean,linestyle='--',color='purple')
+ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*l1617_mean,linestyle='--',color='green')
+
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
 ax.set_ylabel('Integrated NPP 100 m '+cblabel,fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
-fig.suptitle('Integrated '+var_name+' '+timename+' '+regtitle,fontsize=axis_tick_size)
+#fig.suptitle('Integrated '+var_name+' '+timename+' '+regtitle,fontsize=axis_tick_size)
 
 
 fig.savefig(savepath+savename,bbox_inches='tight')

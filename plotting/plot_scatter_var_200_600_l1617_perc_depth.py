@@ -14,6 +14,7 @@ plt.ion()
 
 savepath = './figs/scatter/'
 region_name = 'grid'
+depl = 25  # choose depth layer to start from, actual depth *2
 
 # ROMS output location
 #outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
@@ -162,7 +163,7 @@ for e_i in range(len(exp)):
     fpath1.append(outpath1+filest1+exp[e_i]+fileen)
 
 # read in control to subtract from
-roms_cnt = (np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)
+roms_cnt = (np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
 roms_cnt_vert = np.nanmean(roms_cnt,axis=1)
 roms_cnt_mean = np.nanmean(roms_cnt_vert)
 
@@ -178,7 +179,7 @@ cnt_norm = np.nansum(cnt_concat,axis=1)/cnt_concat.shape[1]
 cntrl_mean = np.nanmean(cnt_norm)*mmolm3_to_mgl
 
 # l1617 upper limit
-roms_l16 = (np.array(Dataset(outpath+filest+'l1617'+fileen,'r').variables[var_nc])*mask_mult)
+roms_l16 = (np.array(Dataset(outpath+filest+'l1617'+fileen,'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
 roms_l16_vert = np.nanmean(roms_l16,axis=1)
 roms_l16_mean = np.nanmean(roms_l16_vert)
 
@@ -201,7 +202,7 @@ figh = 4
 
 axis_tick_size = 14
 
-savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm.png'
+savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm_'+str(depl*2)+'_600m.png'
 #savename = 'sum_neg_'+var_name+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
@@ -209,7 +210,7 @@ fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 for n_i in range(len(exp)):
 
     #0-200
-    roms_var_read = (np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult)
+    roms_var_read = (np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
     #200-600
     roms_var_read1 = np.array(Dataset(fpath1[n_i],'r').variables[var_nc])*mask_mult
 
@@ -256,7 +257,7 @@ for n_i in range(len(exp)):
 #ax.set_ybound(lower=3E5,upper=5E7)
 #ax.set_ylim(bottom=l1617_mean-(l1617_mean*0.01),top=cntrl_mean+(cntrl_mean*0.01))
 #ax.set_ylim(bottom=l1617_perc-(l1617_perc*0.01),top=-3)
-ax.set_ylim(bottom=-2.5,top=-2)
+#ax.set_ylim(bottom=-5,top=-4.2)
 ax.set_xticks(range(len(exp)))
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean,linestyle='--',color='purple')
 ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*l1617_perc,linestyle='--',color='green')
