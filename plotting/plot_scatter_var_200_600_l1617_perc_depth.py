@@ -14,7 +14,10 @@ plt.ion()
 
 savepath = './figs/scatter/'
 region_name = 'grid'
-depl = 25  # choose depth layer to start from, actual depth *2
+# index of depths: 0 = 2 m, 1 = 4 m, etc
+depl0 = 50  # choose depth layer to start from, actual depth *2
+depl1 = 110 # choose depth layer to end, actual depth *2
+            # but if >100, then ((x-100)*40)+200 is the depth
 
 # ROMS output location
 #outpath = '/data/project6/minnaho/opc_scenarios/ext_depth_200/'
@@ -35,11 +38,11 @@ filest1 = 'avg_fullts_200_600_'+var_name+'_'
 fileen1 = '.nc'
 
 # scenario names 
-exp = ['PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
+#exp = ['PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
 #title_exp = ['PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-title_exp = ['50% N\nReduction','50% N\nReduction\n50% Recycle','50% N\nReduction\n90% Recycle','85% N\nReduction','85% N\nReduction\n50% Recycle','85% N\nReduction\n90% Recycle',]
-#exp = ['PNDN_only','FNDN_only']
-#title_exp = ['50% N\nReduction','85% N\nReduction']
+#title_exp = ['50% N\nReduction','50% N\nReduction\n50% Recycle','50% N\nReduction\n90% Recycle','85% N\nReduction','85% N\nReduction\n50% Recycle','85% N\nReduction\n90% Recycle',]
+exp = ['PNDN_only','FNDN_only']
+title_exp = ['50% N\nReduction','85% N\nReduction']
 
 mmolm3_to_mgl = 32./1000
 
@@ -163,46 +166,58 @@ for e_i in range(len(exp)):
     fpath1.append(outpath1+filest1+exp[e_i]+fileen)
 
 # read in control to subtract from
-roms_cnt = (np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
-roms_cnt_vert = np.nanmean(roms_cnt,axis=1)
-roms_cnt_mean = np.nanmean(roms_cnt_vert)
+if depl1 <= 100:
+    roms_cnt = (np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)[:,depl0:depl1,:,:]
+    roms_cnt_vert = np.nanmean(roms_cnt,axis=1)
+    roms_cnt_mean = np.nanmean(roms_cnt_vert)
+    cntrl_mean = roms_cnt_mean*mmolm3_to_mgl
 
-roms_cnt1 = np.array(Dataset(outpath1+filest1+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
-roms_cnt1_vert = np.nanmean(roms_cnt1,axis=1)
-roms_cnt1_mean = np.nanmean(roms_cnt1_vert)
-
-#cntrl_mean = np.nanmean((roms_cnt_mean,roms_cnt1_mean))*mmolm3_to_mgl
-
-# concat two files
-cnt_concat = np.concatenate((roms_cnt,roms_cnt1),axis=1)
-cnt_norm = np.nansum(cnt_concat,axis=1)/cnt_concat.shape[1]
-cntrl_mean = np.nanmean(cnt_norm)*mmolm3_to_mgl
+else:
+    roms_cnt = (np.array(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)[:,depl0:,:,:]
+    roms_cnt1 = (np.array(Dataset(outpath1+filest1+'cntrl'+fileen,'r').variables[var_nc])*mask_mult)[:,:(depl1-100),:,:]
+    #roms_cnt1_vert = np.nanmean(roms_cnt1,axis=1)
+    #roms_cnt1_mean = np.nanmean(roms_cnt1_vert)
+    
+    #cntrl_mean = np.nanmean((roms_cnt_mean,roms_cnt1_mean))*mmolm3_to_mgl
+    
+    # concat two files
+    cnt_concat = np.concatenate((roms_cnt,roms_cnt1),axis=1)
+    cnt_norm = np.nansum(cnt_concat,axis=1)/cnt_concat.shape[1]
+    cntrl_mean = np.nanmean(cnt_norm)*mmolm3_to_mgl
 
 # l1617 upper limit
-roms_l16 = (np.array(Dataset(outpath+filest+'l1617'+fileen,'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
-roms_l16_vert = np.nanmean(roms_l16,axis=1)
-roms_l16_mean = np.nanmean(roms_l16_vert)
+if depl1 <= 100:
+    roms_l16 = (np.array(Dataset(outpath+filest+'l1617'+fileen,'r').variables[var_nc])*mask_mult)[:,depl0:depl1,:,:]
+    roms_l16_vert = np.nanmean(roms_l16,axis=1)
+    roms_l16_mean = np.nanmean(roms_l16_vert)
+    l1617_mean = roms_l16_mean*mmolm3_to_mgl
+    
+else:
+    roms_l16 = (np.array(Dataset(outpath+filest+'l1617'+fileen,'r').variables[var_nc])*mask_mult)[:,depl0:,:,:]
+    roms_l161 = (np.array(Dataset(outpath1+filest1+'l1617'+fileen,'r').variables[var_nc])*mask_mult)[:,:depl1-100,:,:]
+    roms_l161_vert = np.nanmean(roms_l161,axis=1)
+    roms_l161_mean = np.nanmean(roms_l161_vert)
 
-roms_l161 = np.array(Dataset(outpath1+filest1+'l1617'+fileen,'r').variables[var_nc])*mask_mult
-roms_l161_vert = np.nanmean(roms_l161,axis=1)
-roms_l161_mean = np.nanmean(roms_l161_vert)
-
-#l1617_mean = np.nanmean((roms_l16_mean,roms_l161_mean))*mmolm3_to_mgl
-
-# concat two files
-l16_concat = np.concatenate((roms_l16,roms_l161),axis=1)
-l16_norm = np.nansum(l16_concat,axis=1)/l16_concat.shape[1]
-l1617_mean = np.nanmean(l16_norm)*mmolm3_to_mgl
-
+    #l1617_mean = np.nanmean((roms_l16_mean,roms_l161_mean))*mmolm3_to_mgl
+    
+    # concat two files
+    l16_concat = np.concatenate((roms_l16,roms_l161),axis=1)
+    l16_norm = np.nansum(l16_concat,axis=1)/l16_concat.shape[1]
+    l1617_mean = np.nanmean(l16_norm)*mmolm3_to_mgl
+    
 l1617_perc = ((l1617_mean-cntrl_mean)/cntrl_mean)*100
 
-figw = 14
-#figw = 10
+#figw = 14
+figw = 10
 figh = 4
 
 axis_tick_size = 14
 
-savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm_'+str(depl*2)+'_600m.png'
+#savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm_'+str(depl0*2)+'_600m.png'
+if depl1 <= 100:
+    savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm_'+str(depl0*2)+'_'+str(depl1*2)+'.png'
+else:
+    savename = 'sum_posneg_'+var_name+'_'+year_month+'_'+region_name+'_0_600_'+exp[-1]+'_bar_norm_'+str(depl0*2)+'_'+str(((depl1-100)*40)+200)+'.png'
 #savename = 'sum_neg_'+var_name+'_'+year_month+'_'+region_name+'_200_'+exp[-1]+'.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
@@ -210,17 +225,28 @@ fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 for n_i in range(len(exp)):
 
     #0-200
-    roms_var_read = (np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult)[:,depl:,:,:]
+
+    if depl1 <= 100:
+        roms_var_read = (np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult)[:,depl0:depl1,:,:]
     #200-600
-    roms_var_read1 = np.array(Dataset(fpath1[n_i],'r').variables[var_nc])*mask_mult
+    #roms_var_read1 = np.array(Dataset(fpath1[n_i],'r').variables[var_nc])*mask_mult
+
+        roms_neg_vert = np.nanmean(roms_var_read,axis=1)
+        roms_neg = np.nanmean(roms_neg_vert)*mmolm3_to_mgl
 
     #roms_var = roms_var_read - roms_cnt
     #roms_var1 = roms_var_read1 - roms_cnt1
 
-    # concat two files
-    roms_concat = np.concatenate((roms_var_read,roms_var_read1),axis=1)
-    roms_var_norm = np.nansum(roms_concat,axis=1)/roms_concat.shape[1]
-    roms_neg = np.nanmean(roms_var_norm)*mmolm3_to_mgl
+    else:
+        # 0-200
+        roms_var_read = (np.array(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult)[:,depl0:,:,:]
+        #200-600
+        roms_var_read1 = (np.array(Dataset(fpath1[n_i],'r').variables[var_nc])*mask_mult)[:,:depl1-100,:,:]
+        # concat two files
+        roms_concat = np.concatenate((roms_var_read,roms_var_read1),axis=1)
+        roms_var_norm = np.nansum(roms_concat,axis=1)/roms_concat.shape[1]
+        roms_neg = np.nanmean(roms_var_norm)*mmolm3_to_mgl
+        print('maximum increase in oxygen ',exp[e_i],str(np.nanmax(((roms_concat-l16_concat)/l16_concat)*100)+'%'))
 
     # take average
     #roms_neg_vert = np.nanmean(roms_var_read,axis=1)
@@ -257,7 +283,7 @@ for n_i in range(len(exp)):
 #ax.set_ybound(lower=3E5,upper=5E7)
 #ax.set_ylim(bottom=l1617_mean-(l1617_mean*0.01),top=cntrl_mean+(cntrl_mean*0.01))
 #ax.set_ylim(bottom=l1617_perc-(l1617_perc*0.01),top=-3)
-#ax.set_ylim(bottom=-5,top=-4.2)
+ax.set_ylim(bottom=-5,top=-4.2)
 ax.set_xticks(range(len(exp)))
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean,linestyle='--',color='purple')
 ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*l1617_perc,linestyle='--',color='green')

@@ -21,11 +21,11 @@ rep_out = './';
 %mkdir (rep_out)
 addpath(rep_out)
 
-msk=10  % YOUR MASK , goes from 1 to 10: "10 is full bight"
+msk=4  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 %% READ FILES
 %% MODEL OUTPUTS DIRECTOR
 if scenario==1
-repstr = 'loads1617';
+repstr = 'pndn90';
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 %repstr = 'cntrl';
 %rep_mod  = ['/data/project3/minnaho/postprocessing/cntrl_monthly'] ;
@@ -33,7 +33,7 @@ rep_his    = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];
 mkdir(rep_out)
 elseif scenario==2
-repstr = 'l1617';
+repstr = 'pndn90';
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 rep_his  = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];

@@ -8,8 +8,10 @@ path = '/data/project3/minnaho/opc_scenarios/plotting/habitat_capacity/area/'
 
 #exp = ['l1617','PNDN_only','pndn50','pndn90']
 #title_exp = ['Loads 16-17','PNDN only','PNDN 50','PNDN 90']
-exp = ['l1617','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
+#exp = ['l1617','FNDN_only','fndn50','fndn90']
+#title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
+exp = ['l1617','PNDN_only','FNDN_only']
+title_exp = ['Loads 16-17','PNDN only','FNDN only']
 
 #exp = ['l1617'] # compare loads 16-17 to cntrl
 #title_exp = ['Loads 16-17']
@@ -45,6 +47,10 @@ for e_i in range(len(exp)):
         ax.plot(dt,negnc,color=cneg,linestyle=lsty[e_i],label=title_exp[e_i])
     print(title_exp[e_i]+' total habitat expansion '+str(np.nansum(posnc)))
     print(title_exp[e_i]+' total habitat compression '+str(np.nansum(negnc)))
+    print(title_exp[e_i]+' 1998 max expansion '+str(np.nanmax(posnc[2:14])))
+    print(title_exp[e_i]+' 1998 max compression '+str(np.nanmax(negnc[2:14])))
+    print(title_exp[e_i]+' 1999 max expansion '+str(np.nanmax(posnc[14:])))
+    print(title_exp[e_i]+' 1999 max compression '+str(np.nanmax(negnc[14:])))
 
 ax.set_ylim([0,60000])
 ax.set_ylabel('km$^2$',fontsize=axisfont)

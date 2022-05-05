@@ -162,6 +162,13 @@ cntrl_mean = np.nanmean(cntrl_var)*s2d
 l1617_var = np.squeeze(Dataset(outpath+filest+'loads1617'+fileen,'r').variables[var_nc])*mask_mult
 l1617_mean = np.nanmean(l1617_var)*s2d
 
+potwr_var = np.squeeze(Dataset(outpath+filest+'POTW'+fileen,'r').variables[var_nc])*mask_mult
+potwr_mean = np.nanmean(potwr_var)*s2d
+
+# difference between l1617 and POTW only run = rivers 
+potwd_var = np.squeeze(Dataset(outpath+filest+'loads1617-POTW'+fileen,'r').variables[var_nc])*mask_mult
+potwd_mean = np.nanmean(potwd_var)*s2d
+
 figw = 14
 #figw = 10
 figh = 4
@@ -177,12 +184,15 @@ for n_i in range(len(exp)):
     roms_neg = np.nanmean(roms_var)*s2d
 
     print(exp[n_i],str(roms_neg))
+    print(exp[n_i],'up to '+str(np.nanmin(((roms_var-l1617_var)/l1617_var)*100))+'% decrease in productivity')
+    print(exp[n_i],'up to '+str(np.nanmax(((roms_var-l1617_var)/l1617_var)*100))+'% increase in productivity')
     ax.bar(n_i,roms_neg-cntrl_mean,bottom=cntrl_mean)
 
 ax.set_ylim(bottom=cntrl_mean-(cntrl_mean*0.01),top=l1617_mean+(cntrl_mean*0.01))
 ax.set_xticks(range(len(exp)))
 ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean,linestyle='--',color='purple')
 ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*l1617_mean,linestyle='--',color='green')
+#ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*potwd_mean,linestyle='--',color='blue')
 
 ax.set_xticklabels(title_exp)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)

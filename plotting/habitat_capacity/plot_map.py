@@ -26,10 +26,10 @@ plt.ion()
 
 # avg maps
 outpath = '/data/project3/minnaho/opc_scenarios/plotting/habitat_capacity/maps/'
-#filename = 'map_omega_th_1.4_'
-#dtstr = 'Y1999M11'
-filename = 'avg_alltime_map_omega_th_1.4'
-dtstr = ''
+filename = 'map_omega_th_1.4_'
+dtstr = 'Y1999M04'
+#filename = 'avg_alltime_map_omega_th_1.4'
+#dtstr = ''
 # compstr = '' # if comparing to loads 16-17
 compstr = '_cntrl'
 
@@ -90,10 +90,10 @@ lon_potw = np.array(major_nc.variables['longitude'])
 coast_10m = cpf.NaturalEarthFeature('physical','coastline','10m')
 
 # max and min of color bar
-#v_max = 40
-#v_min = -40
-v_max = 20
-v_min = -20
+v_max = 40
+v_min = -40
+#v_max = 20
+#v_min = -20
 
 
 fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
@@ -105,6 +105,11 @@ for t_i in range(len(ncfiles)):
     # plot maps
     p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
     #p_plot = ax.flat[t_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0))
+
+    # contour
+    c_plotneg = ax.flat[t_i].contour(lon_nc,lat_nc,varplt,[-10],colors='red')
+    c_plotpos = ax.flat[t_i].contour(lon_nc,lat_nc,varplt,[10],colors='blue')
+
     
     ax.flat[t_i].set_title(title_exp[t_i],fontsize=axis_tick_size)
     

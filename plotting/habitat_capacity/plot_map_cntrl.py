@@ -26,7 +26,7 @@ plt.ion()
 # avg maps
 outpath = '/data/project3/minnaho/opc_scenarios/plotting/habitat_capacity/maps/'
 filename = 'map_omega_th_1.4_'
-dtstr = 'Y1999M10'
+dtstr = 'Y1999M04'
 #filename = 'avg_alltime_map_omega_th_1.4'
 #dtstr = ''
 
@@ -86,8 +86,8 @@ lon_potw = np.array(major_nc.variables['longitude'])
 coast_10m = cpf.NaturalEarthFeature('physical','coastline','10m')
 
 # max and min of color bar
-v_max = 80
-v_min = -80
+v_max = 40
+v_min = -40
 #v_max = 20
 #v_min = -20
 #v_max = 5
@@ -103,6 +103,10 @@ varplt = np.squeeze(np.array(datanc['habitat_cap']))
 # plot maps
 p_plot = ax.pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
 #p_plot = ax.pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.DivergingNorm(0))
+
+# contour
+c_plotneg = ax.contour(lon_nc,lat_nc,varplt,[-10],colors='red')
+c_plotpos = ax.contour(lon_nc,lat_nc,varplt,[10],colors='blue')
 
 ax.set_title(title_exp[t_i],fontsize=axis_tick_size)
 
