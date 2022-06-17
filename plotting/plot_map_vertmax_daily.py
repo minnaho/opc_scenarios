@@ -159,9 +159,9 @@ for y_i in range(start_year,end_year+1):
             varcnc[varcnc>1E10] = np.nan
             varcnc[varcnc<=0] = np.nan
             varcplt = np.ones((varcnc.shape[1],varcnc.shape[2]))*np.nan
-            for y_i in range(varcnc.shape[1]):
-                for x_i in range(varcnc.shape[2]):
-                    varcplt[y_i,x_i] = np.nanmax(varcnc[:,y_i,x_i])
+            for eta_i in range(varcnc.shape[1]):
+                for xi_i in range(varcnc.shape[2]):
+                    varcplt[eta_i,xi_i] = np.nanmax(varcnc[:,eta_i,xi_i])
 
             #p_plot1 = ax.flat[0].pcolormesh(lon_nc,lat_nc,varcplt,transform=ccrs.PlateCarree(),cmap=c_map1,vmin=vc_min,vmax=vc_max)
             p_plot1 = ax.flat[0].pcolormesh(lon_nc,lat_nc,varcplt,transform=ccrs.PlateCarree(),cmap=c_map,vmin=vc_min,vmax=vc_max)
@@ -182,9 +182,9 @@ for y_i in range(start_year,end_year+1):
                 vardnc[vardnc>1E10] = np.nan
                 vardnc[vardnc<=0] = np.nan
                 vardplt = np.ones((vardnc.shape[1],vardnc.shape[2]))*np.nan
-                for y_i in range(vardnc.shape[1]):
-                    for x_i in range(vardnc.shape[2]):
-                        vardplt[y_i,x_i] = np.nanmax(vardnc[:,y_i,x_i])
+                for eta_i in range(vardnc.shape[1]):
+                    for xi_i in range(vardnc.shape[2]):
+                        vardplt[eta_i,xi_i] = np.nanmax(vardnc[:,eta_i,xi_i])
 
                 # plot maps
                 p_plot = ax.flat[e_i+1].pcolormesh(lon_nc,lat_nc,vardplt,transform=ccrs.PlateCarree(),cmap=c_map,vmin=v_min,vmax=v_max)
