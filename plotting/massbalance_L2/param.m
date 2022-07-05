@@ -22,10 +22,10 @@ addpath(rep_out)
 %msk=10  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 %% READ FILES
 %% MODEL OUTPUTS DIRECTOR
-if scenario==1
-msk=8  % YOUR MASK , goes from 1 to 10: "10 is full bight"
+%if scenario==1
+msk=9  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 vname = 'O2'
-dst = 0
+dst = 660
 den = 700
 % 1997-2000 ap
 %repstr = 'L2SCB_1997_2000'
@@ -40,7 +40,7 @@ den = 700
 %rep_mod  = ['/data/project6/ROMS/L2SCB_AP/',repstr,'/'] ;
 %rep_out = [rep_out,'/',repstr,'_ap','/'];
 % OPC wastewater
-repstr = 'pndn50'
+repstr = 'PNDN_only'
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 % OPC scenarios cntrl
 %repstr = 'cntrl';
@@ -48,11 +48,11 @@ rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 rep_his    = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];
 mkdir(rep_out)
-%if scenario==1
-elseif scenario==2
-msk=8  % YOUR MASK , goes from 1 to 10: "10 is full bight"
+if scenario==1
+%elseif scenario==2
+msk=9  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 vname = 'NH4'
-dst = 0
+dst = 240
 den = 300
 % 1997-2000 cntrl
 %repstr = 'L2SCB_1997_2000'
@@ -67,7 +67,7 @@ den = 300
 %rep_mod  = ['/data/project6/ROMS/L2SCB_AP/',repstr,'/'] ;
 %rep_out = [rep_out,'/',repstr,'_ap','/'];
 % OPC wastewater
-repstr = 'pndn50'
+repstr = 'PNDN_only'
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 % OPC scenarios cntrl
 %repstr = 'cntrl';
@@ -75,8 +75,9 @@ rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 rep_his  = rep_mod ;
 rep_out = [rep_out,'/',repstr,'/'];
 mkdir(rep_out)
-elseif scenario==3
-msk=8  % YOUR MASK , goes from 1 to 10: "10 is full bight"
+%elseif scenario==3
+elseif scenario==2
+msk=9  % YOUR MASK , goes from 1 to 10: "10 is full bight"
 vname = 'NO3'
 dst = 0
 den = 300
@@ -96,7 +97,7 @@ den = 300
 %rep_mod  = ['/data/project6/ROMS/L2SCB_AP/',repstr,'/'] ;
 %rep_out = [rep_out,'/',repstr,'_ap','/'];
 % OPC wastewater
-repstr = 'pndn50'
+repstr = 'PNDN_only'
 rep_mod  = ['/data/project6/ROMS/L2SCB_OPC/',repstr,'/monthly/'] ;
 % OPC scenarios cntrl
 %repstr = 'cntrl';
