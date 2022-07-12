@@ -14,7 +14,7 @@ cblabel = 'mmol/m3'
 dp0 = 0
 dp1 = 320
 dpstp = 20
-maskn = 9
+maskn = 8
 
 fname = 'budget_L2_mask'+'%02d'%maskn+'_'+varstr+'_'
 
@@ -32,7 +32,7 @@ compexp = 'cntrl'
 ncpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/'
 
 savepath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/figs/'
-savename = 'inp_hov_budget_mask'+'%02d'%maskn+'_'+varstr
+savename = 'hov_budget_mask'+'%02d'%maskn+'_'+varstr
 
 s2d = 86400
 
@@ -50,8 +50,8 @@ if compexp == 'cntrl':
             v_min = -0.5
             v_max = 0.5
         else:
-            v_min = -5E-3
-            v_max = 5E-3
+            v_min = -0.1
+            v_max = 0.1
     if varstr == 'NO3': 
         #v_min = -1E-1
         #v_max = 1E-1
@@ -79,13 +79,8 @@ for d_i in range(dp0,dp1,dpstp):
     dttcomp = np.array(datacomp.variables['dt'])
     volcomp = np.array(datacomp.variables['volume'])
     arecomp = np.array(datacomp.variables['area'])
-    invcomp = np.array(datacomp.variables['invm'])/volcomp
     bgccomp = (np.array(datacomp.variables['bgc'])*s2d)/(dttcomp*arecomp)
-    hfluxcomp = (np.array(datacomp.variables['horizontal_flux'])*s2d)/(dttcomp*arecomp)
-    vfluxcomp = (np.array(datacomp.variables['vertical_flux'])*s2d)/(dttcomp*arecomp)
-    dndtcomp = (np.array(datacomp.variables['dNdT'])*s2d)/(dttcomp*arecomp)
-    inpcomp = dndtcomp-(hfluxcomp+vfluxcomp+bgccomp)
-
+    invcomp = np.array(datacomp.variables['invm'])/volcomp
     for e_i in range(len(exp)):
         datanc = Dataset(ncpath+exp[e_i]+'/'+fname+str(d_i)+'_to_'+str(d_i+dpstp)+'_'+exp[e_i]+'.nc','r')
         timnc = np.array(datanc.variables['time'])
@@ -102,19 +97,15 @@ for d_i in range(dp0,dp1,dpstp):
         arenc = np.array(datanc.variables['area'])
         bgcnc = (np.array(datanc.variables['bgc'])*s2d)/(dttnc*arenc)
         invnc = np.array(datanc.variables['invm'])/volnc
-        hfluxnc = (np.array(datanc.variables['horizontal_flux'])*s2d)/(dttnc*arenc)
-        vfluxnc = (np.array(datanc.variables['vertical_flux'])*s2d)/(dttnc*arenc)
-        dndtnc = (np.array(datanc.variables['dNdT'])*s2d)/(dttnc*arenc)
-        inpnc = dndtnc-(hfluxnc+vfluxnc+bgcnc)
         # take difference (of only indices that match time period)
         # cntrl
         if compexp=='cntrl':
-            inpdif = inpnc[res] 
+            invdif = invnc[res] - invcomp
         # loads1617
         else:
-            inpdif = inpnc 
+            invdif = invnc - invcomp[res]
         # write to array
-        inv_arr[e_i,:,dep_ind] = inpdif
+        inv_arr[e_i,:,dep_ind] = invdif
 
     dep_ind += 1
 

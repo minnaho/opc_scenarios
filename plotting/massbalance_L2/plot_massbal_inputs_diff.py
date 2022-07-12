@@ -109,10 +109,10 @@ for d_i in range(dp0,dp1,dpstp):
         # take difference (of only indices that match time period)
         # cntrl
         if compexp=='cntrl':
-            inpdif = inpnc[res] 
+            inpdif = inpnc[res] - inpcomp
         # loads1617
         else:
-            inpdif = inpnc 
+            inpdif = inpnc - inpcomp[res]
         # write to array
         inv_arr[e_i,:,dep_ind] = inpdif
 

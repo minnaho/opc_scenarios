@@ -7,19 +7,19 @@ import matplotlib.ticker as ticker
 import matplotlib.colors as mcolors
 import cmocean
 
-#plt.ion()
+plt.ion()
 
-varstr = 'NH4'
+varstr = 'NO3'
 cblabel = 'mmol/m3'
 dp0 = 0
 dp1 = 320
 dpstp = 20
-maskn = 9
+maskn = 3
 
 fname = 'budget_L2_mask'+'%02d'%maskn+'_'+varstr+'_'
 
-exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
-title_exp = ['Loads 16-17','PNDN','PNDN 50','PNDN 90','FNDN','FNDN 50','FNDN 90']
+exp = ['loads1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90','cntrl']
+title_exp = ['Loads 16-17','PNDN','PNDN 50','PNDN 90','FNDN','FNDN 50','FNDN 90','cntrl']
 #exp = ['loads1617','PNDN_only','pndn50','pndn90']
 #title_exp = ['Loads 16-17','PNDN','PNDN 50','PNDN 90']
 #exp = ['loads1617','FNDN_only','fndn50','fndn90']
@@ -32,7 +32,7 @@ compexp = 'cntrl'
 ncpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/'
 
 savepath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/figs/'
-savename = 'inp_hov_budget_mask'+'%02d'%maskn+'_'+varstr
+savename = 'inp_prof_budget_mask'+'%02d'%maskn+'_'+varstr
 
 s2d = 86400
 
@@ -115,10 +115,15 @@ for d_i in range(dp0,dp1,dpstp):
             inpdif = inpnc 
         # write to array
         inv_arr[e_i,:,dep_ind] = inpdif
+        #if exp[e_i] == 'PNDN_only':
+        #    exit()
 
     dep_ind += 1
 
-figw = 14
+# make into profile
+invplt = np.nanmean(inv_arr,axis=1)
+
+figw = 8
 figh = 10
 axisfont = 16
 
@@ -126,29 +131,16 @@ width = 0.2
 
 c_map = cmocean.cm.balance
 
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 for e_i in range(len(exp)):
-
-    fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-    # cntrl
-    if compexp=='cntrl':
-        p_plt = ax.pcolormesh(timcompconv,list(range(dp0,dp1,dpstp)),np.transpose(inv_arr[e_i]),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
-        ax.set_title(varstr+' '+title_exp[e_i]+' - CTRL',fontsize=axisfont)
-    #loads1617 
-    else:
-        p_plt = ax.pcolormesh(timncconv,list(range(dp0,dp1,dpstp)),np.transpose(inv_arr[e_i]),cmap=c_map,norm=mcolors.DivergingNorm(0),vmin=v_min,vmax=v_max)
-        ax.set_title(varstr+' '+title_exp[e_i]+' - Loads 16-17',fontsize=axisfont)
-    ax.invert_yaxis()
+    p_plt = ax.plot(invplt[e_i],list(range(dp0,dp1,dpstp)),label=title_exp[e_i])
+    ax.set_title('Input '+varstr+' Mask '+str(maskn),fontsize=axisfont)
     ax.set_ylabel('Depth',fontsize=axisfont)
     ax.tick_params(axis='both',which='major',labelsize=axisfont)
     ax.yaxis.set_ticks_position('both')
     ax.xaxis.set_ticks_position('both')
-    p0 = ax.get_position().get_points().flatten()
-    p1 = ax.get_position().get_points().flatten()
-    cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
 
-    cb = fig.colorbar(p_plt,cax=cb_ax,orientation='vertical')
-    cb.set_label(cblabel,fontsize=axisfont)
-    cb.ax.tick_params(axis='both',which='major',labelsize=axisfont)
-
-    fig.savefig(savepath+savename+'_'+exp[e_i]+'_'+compexp+'.png',bbox_inches='tight')
+ax.invert_yaxis()
+ax.legend(loc='best')
+fig.savefig(savepath+savename+'.png',bbox_inches='tight')
 

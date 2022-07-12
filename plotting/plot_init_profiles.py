@@ -44,17 +44,6 @@ gridnc = l2grid.grid_nc
 
 # read in major POTW radii
 outf = ['hyp','jwp','ocs','plw']
-maskch = np.ones((4,gridnc.variables['h'].shape[0],gridnc.variables['h'].shape[1]))*np.nan
-maskch[0] = np.squeeze(Dataset(outpath+'hyp'+str(dist)+'km.nc','r').variables['mask'])
-maskch[1] = np.squeeze(Dataset(outpath+'jwp'+str(dist)+'km.nc','r').variables['mask'])
-maskch[2] = np.squeeze(Dataset(outpath+'ocs'+str(dist)+'km.nc','r').variables['mask'])
-maskch[3] = np.squeeze(Dataset(outpath+'plw'+str(dist)+'km.nc','r').variables['mask'])
-maskch[maskch==0] = np.nan 
-
-# combine into one
-#hypr[np.where(jwpr==1)[0],np.where(jwpr==1)[1]] = 1
-#hypr[np.where(ocsr==1)[0],np.where(ocsr==1)[1]] = 1
-#hypr[np.where(plwr==1)[0],np.where(plwr==1)[1]] = 1
 
 # range of depths
 dps = np.arange(dst,den+stp,stp)
@@ -108,29 +97,6 @@ rfiles_std[2,:,:,:] = pndn90_std_read[:,:,:]
 prof_avg = np.ones((rfiles_avg.shape[0],4,dps.shape[0]))*np.nan
 prof_std = np.ones((rfiles_avg.shape[0],4,dps.shape[0]))*np.nan
 
-# zslice and calculate profile in area
-# avg
-for r_i in range(rfiles_avg.shape[0]):
-    varnc = rfiles_avg[r_i]
-    varsli = np.ones((dps.shape[0],varnc.shape[1],varnc.shape[2]))*np.nan
-    for d_p in range(dst,den+stp,stp):
-        varsli[d_p-dst,:,:] = np.array(pyroms.tools.zslice(varnc,-1*d_p,grd)[0])
-    for m_i in range(maskch.shape[0]):
-        varsli_am = varsli*maskch[m_i]
-        varsli_am[varsli_am>1E10] = np.nan
-        prof_avg[r_i,m_i] = np.squeeze(np.apply_over_axes(np.nanmean,varsli_am,(1,2)))
-
-# std
-for r_i in range(rfiles_std.shape[0]):
-    varnc = rfiles_std[r_i]
-    varsli = np.ones((dps.shape[0],varnc.shape[1],varnc.shape[2]))*np.nan
-    for d_p in range(dst,den+stp,stp):
-        varsli[d_p-dst,:,:] = np.array(pyroms.tools.zslice(varnc,-1*d_p,grd)[0])
-    for m_i in range(maskch.shape[0]):
-        varsli_sm = varsli*maskch[m_i]
-        varsli_sm[varsli_sm>1E10] = np.nan
-        prof_std[r_i,m_i] = np.squeeze(np.apply_over_axes(np.nanmean,varsli_sm,(1,2)))
-
 # initial profile
 init = '/data/project1/minnaho/psource/wastewater_scenarios/roms_psource_PNDN_only_realistic.nc'
 htp_st = 0
@@ -142,6 +108,7 @@ plw_en = 96
 qshp = np.squeeze(Dataset(init,'r').variables['Qshape'])
 isrc = np.squeeze(Dataset(init,'r').variables['Isrc'])
 jsrc = np.squeeze(Dataset(init,'r').variables['Jsrc'])
+nval = np.squeeze(Dataset(init,'r').variables['NH4'])
 
 htpq = qshp[:,htp_st:jwp_st]
 jwpq = qshp[:,jwp_st:ocs_st]
@@ -158,45 +125,77 @@ jwpj = jsrc[jwp_st:ocs_st].astype(int)
 ocsj = jsrc[ocs_st:plw_st].astype(int)
 plwj = jsrc[plw_st:plw_en].astype(int)
 
-#pndnon_avg_zeta = np.squeeze(Dataset(outpath+'avg_NH4_zeta_PNDN_only.nc','r').variables['zeta'])*maskch
+htpn = nval[htp_st]
+jwpn = nval[jwp_st]
+ocsn = nval[ocs_st]
+plwn = nval[plw_st]
+
+pndnon_avg_zeta = np.squeeze(Dataset(outpath+'avg_NH4_zeta_PNDN_only.nc','r').variables['zeta'])
 
 
-#fnc = Dataset(outpath+'avg_NH4_zeta_PNDN_only.nc','r')
-#zdepths = rd.get_zs3d(fnc,gridnc,dim_bounds=[0,pndnon_avg_zeta.shape[0],0,pndnon_avg_zeta.shape[1]],varname='NH4')
+expname = 'PNDN_only'
+fnc = Dataset(outpath+'avg_NH4_zeta_PNDN_only.nc','r')
+zdepths = rd.get_zs3d(fnc,gridnc,dim_bounds=[0,pndnon_avg_zeta.shape[0],0,pndnon_avg_zeta.shape[1]],varname='NH4')
+zdepths[zdepths>1E10] = np.nan
 
-#htpz = zdepths[:,htpj,htpi]
+htpz = zdepths[:,htpj,htpi]
+jwpz = zdepths[:,jwpj,jwpi]
+ocsz = zdepths[:,ocsj,ocsi]
+plwz = zdepths[:,plwj,plwi]
 
-#for p_i in range(htpz.shape[1]):
-#    plt.scatter(htpq[:,p_i],htpz[:,p_i])
-
-
-srho = np.arange(qshp.shape[0])
+plt.ion()
 
 figw = 8
 figh = 10
 
-#plt.ion()
+hline = 50
 
-for m_p in range(maskch.shape[0]):
-    fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-    ax.plot(prof_avg[0,m_p],dps,label='PNDN',color='blue')
-    ax.plot(prof_avg[1,m_p],dps,label='PNDN50',color='orange')
-    ax.plot(prof_avg[2,m_p],dps,label='PNDN90',color='green')
-    ax.plot(prof_avg[0,m_p]+prof_std[0,m_p],dps,color='blue',linestyle='--')
-    ax.plot(prof_avg[1,m_p]+prof_std[1,m_p],dps,color='orange',linestyle='--')
-    ax.plot(prof_avg[2,m_p]+prof_std[2,m_p],dps,color='green',linestyle='--')
-    ax.plot(prof_avg[0,m_p]-prof_std[0,m_p],dps,color='blue',linestyle='--')
-    ax.plot(prof_avg[1,m_p]-prof_std[1,m_p],dps,color='orange',linestyle='--')
-    ax.plot(prof_avg[2,m_p]-prof_std[2,m_p],dps,color='green',linestyle='--')
-    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*np.where(prof_avg[0,m_p]==np.nanmax(prof_avg[0,m_p]))[0][0]+1,color='blue',linestyle=':')
-    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*np.where(prof_avg[1,m_p]==np.nanmax(prof_avg[1,m_p]))[0][0]+1,color='orange',linestyle=':')
-    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*np.where(prof_avg[2,m_p]==np.nanmax(prof_avg[2,m_p]))[0][0]+1,color='green',linestyle=':')
-    ax.set_title(outf[m_p]+' '+str(dist)+' km')
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+for p_i in range(htpz.shape[1]):
+    ax.plot(htpq[:,p_i]*htpn[0],htpz.T[p_i]*-1)
+    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*htpz.T[p_i][np.where(htpq[:,p_i]*htpn[0]==np.nanmax(htpq[:,p_i]*htpn[0]))[0][0]]*-1,color='blue',linestyle=':')
+    ax.set_title(outf[0]+' initial')
     ax.set_ylabel('Depth (m)')
     ax.set_xlabel(varstr+' (mmol/m3)')
     ax.set_ylim([-3,den+3])
     ax.invert_yaxis()
     ax.legend(loc='best')
-    fig.savefig('./figs/profiles/'+outf[m_p]+str(dist)+'km_'+varstr+'.png',bbox_inches='tight')
-    plt.close()
+    fig.savefig('./figs/profiles/initial_'+outf[0]+'_'+varstr+'_'+expname+'.png',bbox_inches='tight')
+
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+for p_i in range(jwpz.shape[1]):
+    ax.plot(jwpq[:,p_i]*jwpn[0],jwpz.T[p_i]*-1)
+    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*jwpz.T[p_i][np.where(jwpq[:,p_i]*jwpn[0]==np.nanmax(jwpq[:,p_i]*jwpn[0]))[0][0]]*-1,color='blue',linestyle=':')
+    ax.set_title(outf[1]+' initial')
+    ax.set_ylabel('Depth (m)')
+    ax.set_xlabel(varstr+' (mmol/m3)')
+    ax.set_ylim([-3,den+3])
+    ax.invert_yaxis()
+    ax.legend(loc='best')
+    fig.savefig('./figs/profiles/initial_'+outf[1]+'_'+varstr+'_'+expname+'.png',bbox_inches='tight')
+
+
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+for p_i in range(ocsz.shape[1]):
+    ax.plot(ocsq[:,p_i]*ocsn[0],ocsz.T[p_i]*-1)
+    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*ocsz.T[p_i][np.where(ocsq[:,p_i]*ocsn[0]==np.nanmax(ocsq[:,p_i]*ocsn[0]))[0][0]]*-1,color='blue',linestyle=':')
+    ax.set_title(outf[2]+' initial')
+    ax.set_ylabel('Depth (m)')
+    ax.set_xlabel(varstr+' (mmol/m3)')
+    ax.set_ylim([-3,den+3])
+    ax.invert_yaxis()
+    ax.legend(loc='best')
+    fig.savefig('./figs/profiles/initial_'+outf[2]+'_'+varstr+'_'+expname+'.png',bbox_inches='tight')
+
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+for p_i in range(plwz.shape[1]):
+    ax.plot(plwq[:,p_i]*plwn[0],plwz.T[p_i]*-1)
+    ax.plot(np.arange(hline),np.ones((len(np.arange(hline))))*plwz.T[p_i][np.where(plwq[:,p_i]*plwn[0]==np.nanmax(plwq[:,p_i]*plwn[0]))[0][0]]*-1,color='blue',linestyle=':')
+    ax.set_title(outf[3]+' initial')
+    ax.set_ylabel('Depth (m)')
+    ax.set_xlabel(varstr+' (mmol/m3)')
+    ax.set_ylim([-3,den+3])
+    ax.invert_yaxis()
+    ax.legend(loc='best')
+    fig.savefig('./figs/profiles/initial_'+outf[3]+'_'+varstr+'_'+expname+'.png',bbox_inches='tight')
 
