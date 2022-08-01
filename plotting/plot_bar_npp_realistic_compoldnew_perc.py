@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'grid'
+region_name = 'coast'
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
@@ -22,48 +22,79 @@ var_name = 'npp'
 var_nc = 'var_int' 
 cblabel = 'mmol m$^{-2}$ d$^{-1}$'
 
-#year_month = 'Y1998_M04_06'
-#year_month = 'fullts'
-year_month = '2016'
+year_month1 = 'fullts'
+year_month2 = '2017'
 
 # scenario names 
 exp = ['PNDN_only',
        'PNDN_only_realistic',
        'FNDN_only',
-       'FNDN_only_realistic', 
-       'pndn50', 
-       'pndn50_realistic', 
-       'pndn90', 
-       'pndn90_realistic']
+       'FNDN_only_realistic',
+       'pndn50',
+       'pndn50_realistic',
+       'pndn90',
+       'pndn90_realistic',
+       'fndn50',
+       'fndn90']
 
-title_exp = ['50% N\nReduction 98-99',
-             '2016', 
-             '85% N\nReduction 98-99', 
-             '2016', 
-             '50% N\nReduction\n50% Recycle 98-99', 
-             '2016', 
-             '50% N\nReduction\n90% Recycle 98-99',
-             '2016']
-#exp = ['PNDN_only','FNDN_only']
-#title_exp = ['50% N\nReduction','85% N\nReduction']
+if year_month1 == 'fullts':
+    title_exp = ['50% N\nReduction\n98-99',
+                 year_month2,
+                 '85% N\nReduction\n98-99',
+                 year_month2,
+                 '50% N\nReduction\n50% Recycle\n98-99',
+                 year_month2,
+                 '50% N\nReduction\n90% Recycle\n98-99',
+                 year_month2,
+                 '85% N\nReduction\n50% Recycle\n98-99',
+                 '85% N\nReduction\n90% Recycle\n98-99']
+    if year_month2 == 'fullts':
+        title_exp = ['50% N\nReduction\n98-99',
+                     '16-17',
+                     '85% N\nReduction\n98-99',
+                     '16-17',
+                     '50% N\nReduction\n50% Recycle\n98-99',
+                     '16-17',
+                     '50% N\nReduction\n90% Recycle\n98-99',
+                     '16-17',
+                     '85% N\nReduction\n50% Recycle\n98-99',
+                     '85% N\nReduction\n90% Recycle\n98-99']
+else:
+    title_exp = ['50% N\nReduction\n'+year_month1,
+                 year_month2,
+                 '85% N\nReduction\n'+year_month1,
+                 year_month2,
+                 '50% N\nReduction\n50% Recycle\n'+year_month1,
+                 year_month2,
+                 '50% N\nReduction\n90% Recycle\n'+year_month1,
+                 year_month2,
+                 '85% N\nReduction\n50% Recycle\n'+year_month1,
+                 '85% N\nReduction\n90% Recycle\n'+year_month1]
+    if year_month2 == 'fullts':
+        title_exp = ['50% N\nReduction\n'+year_month1,
+                     '16-17',
+                     '85% N\nReduction\n'+year_month1,
+                     '16-17',
+                     '50% N\nReduction\n50% Recycle\n'+year_month1,
+                     '16-17',
+                     '50% N\nReduction\n90% Recycle\n'+year_month1,
+                     '16-17',
+                     '85% N\nReduction\n50% Recycle\n'+year_month1,
+                     '85% N\nReduction\n90% Recycle\n'+year_month1]
+
 
 #filest = 'int_avg_100m_50m_'
-filest1 = 'avg_fullts_int_avg_100m_50m_'
-filest2 = 'avg_'+year_month+'_int_avg_100m_50m_'
+filest1 = 'avg_'+year_month1+'_int_avg_100m_50m_'
+filest2 = 'avg_'+year_month2+'_int_avg_100m_50m_'
 
-filest1_std = 'concat_fullts_int_avg_100m_50m_'
-filest2_std = 'concat_'+year_month+'_int_avg_100m_50m_'
-#fileen = '_'+var_name+'_'+year_month+'.nc'
+filest1_std = 'concat_'+year_month1+'_int_avg_100m_50m_'
+filest2_std = 'concat_'+year_month2+'_int_avg_100m_50m_'
+
 fileen = '_'+var_name+'.nc'
 
 
 # region masks
 mask_nc = l2grid.mask_nc
-pm_nc = l2grid.pm_nc
-pn_nc = l2grid.pn_nc
-
-xisize = 1/pm_nc
-etasize = 1/pn_nc
 
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
@@ -187,30 +218,38 @@ s2d = 86400
 
 # get cntrl and loads1617 to compare to
 #cntrl_var = np.squeeze(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
-cntrl_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_old = np.squeeze(Dataset(outpath+'avg_'+year_month1+'_int_avg_100m_50m_cntrl_initap'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_old[cntrl_var_old==0] = np.nan
 cntrl_mean_old = np.nanmean(cntrl_var_old)*s2d
 
-cntrl_std_old_rd = np.squeeze(Datatset('concat_fullts_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
-cntrl_std_old = np.nanstd(np.nanmean(cntrl_std_old,axis=(1,2))*s2d
+cntrl_std_old_rd = np.squeeze(Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_cntrl_initap'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_std_old_rd[cntrl_std_old_rd==0] = np.nan
+cntrl_std_old = np.nanstd(np.nanmean(cntrl_std_old_rd,axis=(1,2)))*s2d
 
-cntrl_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month2+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_new[cntrl_var_new==0] = np.nan
 cntrl_mean_new = np.nanmean(cntrl_var_new)*s2d
 
-cntrl_std_new_rd = np.squeeze(Datatset('concat_'+year_month+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
-cntrl_std_new = np.nanstd(cntrl_std_new)*s2d
+cntrl_std_new_rd = np.squeeze(Dataset(outpath+'concat_'+year_month2+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_std_new_rd[cntrl_std_new_rd==0] = np.nan
+cntrl_std_new = np.nanstd(np.nanmean(cntrl_std_new_rd,axis=(1,2)))*s2d
 
 
-fulll_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_old = np.squeeze(Dataset(outpath+'avg_'+year_month1+'_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_old[fulll_var_old==0] = np.nan
 fulll_mean_old = np.nanmean(fulll_var_old)*s2d
 
-fulll_std_old_rd = np.squeeze(Datatset('concat_fullts_int_avg_100m_50m_fulll'+fileen,'r').variables[var_nc])*mask_mult
-fulll_std_old = np.nanstd(fulll_std_old)*s2d
+fulll_std_old_rd = np.squeeze(Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+fulll_std_old_rd[fulll_std_old_rd==0] = np.nan
+fulll_std_old = np.nanstd(np.nanmean(fulll_std_old_rd,axis=(1,2)))*s2d
 
-fulll_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month2+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_new[fulll_var_new==0] = np.nan
 fulll_mean_new = np.nanmean(fulll_var_new)*s2d
 
-fulll_std_new_rd = np.squeeze(Datatset('concat_'+year_month+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
-fulll_std_new = np.nanstd(fulll_std_new)*s2d
+fulll_std_new_rd = np.squeeze(Dataset(outpath+'concat_'+year_month2+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_std_new_rd[fulll_std_new_rd==0] = np.nan
+fulll_std_new = np.nanstd(np.nanmean(fulll_std_new_rd,axis=(1,2)))*s2d
 
 #l1617_var = np.squeeze(Dataset(outpath+filest+'loads1617'+fileen,'r').variables[var_nc])*mask_mult
 #l1617_mean = np.nanmean(l1617_var)*s2d
@@ -228,13 +267,18 @@ figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'_bar_perc_compoldnew_recy.png'
+savename = var_name+'_'+year_month1+'_'+year_month2+'_'+region_name+'_'+exp[-1]+'_bar_perc_compoldnew_recy_cntrlinitap.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
     roms_var = np.squeeze(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
+    roms_var[roms_var==0] = np.nan
     roms_neg_raw = np.nanmean(roms_var)*s2d
+    roms_std_rd = np.squeeze(Dataset(fpath_std[n_i],'r').variables[var_nc])*mask_mult
+    roms_std_rd[roms_std_rd==0] = np.nan
+    roms_std = np.nanstd(np.nanmean(roms_std_rd,axis=(1,2)))*s2d
+
 
     #print(exp[n_i],'up to '+str(np.nanmin(((roms_var-l1617_var)/l1617_var)*100))+'% decrease in productivity')
     #print(exp[n_i],'up to '+str(np.nanmax(((roms_var-l1617_var)/l1617_var)*100))+'% increase in productivity')
@@ -242,14 +286,18 @@ for n_i in range(len(exp)):
     # calculate percent of full-cntrl
     if 'real' in exp[n_i]:
         roms_neg = ((roms_neg_raw-fulll_mean_new)/(fulll_mean_new-cntrl_mean_new))*100
+        roms_neg_std = ((roms_std-fulll_mean_new)/(fulll_mean_new-cntrl_mean_new))*100
+        #ax.bar(n_i,roms_neg,yerr=roms_neg_std,color='gray')
         ax.bar(n_i,roms_neg,color='gray')
     else:
         roms_neg = ((roms_neg_raw-fulll_mean_old)/(fulll_mean_old-cntrl_mean_old))*100
+        roms_neg_std = ((roms_std-fulll_mean_old)/(fulll_mean_old-cntrl_mean_old))*100
+        #ax.bar(n_i,roms_neg,yerr=roms_neg_std,color='white',edgecolor='k')
         ax.bar(n_i,roms_neg,color='white',edgecolor='k')
 
     print(exp[n_i],str(roms_neg))
 
-ax.set_ylim(bottom=-100,top=10)
+ax.set_ylim(bottom=-110,top=10)
 ax.set_xticks(range(len(exp)))
 ax.plot(range(-1,len(exp)+1),np.zeros((len(exp)+2)),linestyle='--',color='black')
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean_old,linestyle='--',color='purple')
@@ -257,7 +305,7 @@ ax.plot(range(-1,len(exp)+1),np.zeros((len(exp)+2)),linestyle='--',color='black'
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*fulll_mean_old,linestyle='--',color='green')
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*fulll_mean_new,linestyle=':',color='green')
 
-ax.set_xticklabels(title_exp,fontsize=12)
+ax.set_xticklabels(title_exp,fontsize=12,rotation=90)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
 ax.set_ylabel('% change in NPP',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)

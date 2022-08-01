@@ -1,4 +1,4 @@
-# bar plot of difference only
+# bar plot of npp and diff from fulll-cntrl
 import sys
 import os
 sys.path.append('/data/project3/minnaho/global/')
@@ -7,11 +7,12 @@ import numpy as np
 from netCDF4 import Dataset,num2date
 import glob as glob
 import matplotlib.pyplot as plt
+import pandas as pd
 
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'mask7'
+region_name = 'grid'
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
@@ -23,7 +24,8 @@ cblabel = 'mmol m$^{-2}$ d$^{-1}$'
 
 #year_month = 'Y1998_M04_06'
 #year_month = 'fullts'
-year_month = '2016'
+year_month1 = 'fullts'
+year_month2 = '2016'
 
 # scenario names 
 exp = ['PNDN_only',
@@ -47,18 +49,17 @@ title_exp = ['50% N\nReduction 98-99',
 #title_exp = ['50% N\nReduction','85% N\nReduction']
 
 #filest = 'int_avg_100m_50m_'
-filest1 = 'avg_fullts_int_avg_100m_50m_'
-filest2 = 'avg_'+year_month+'_int_avg_100m_50m_'
-#fileen = '_'+var_name+'_'+year_month+'.nc'
+filest1 = 'avg_'+year_month1+'_int_avg_100m_50m_'
+filest2 = 'avg_'+year_month2+'_int_avg_100m_50m_'
+
+filest1_std = 'concat_'+year_month1+'_int_avg_100m_50m_'
+filest2_std = 'concat_'+year_month2+'_int_avg_100m_50m_'
+
 fileen = '_'+var_name+'.nc'
+
 
 # region masks
 mask_nc = l2grid.mask_nc
-pm_nc = l2grid.pm_nc
-pn_nc = l2grid.pn_nc
-
-xisize = 1/pm_nc
-etasize = 1/pn_nc
 
 region_mask = Dataset('/data/project1/minnaho/make_masks/mask_scb.nc','r')
 mask_ssd = np.array(region_mask.variables['mask_ssd'])
@@ -170,22 +171,60 @@ for e_i in range(len(exp)):
     else:
         fpath.append(outpath+filest1+exp[e_i]+fileen)
 
+fpath_std = []
+for e_i in range(len(exp)):
+    if 'realistic' in exp[e_i]:
+        fpath_std.append(outpath+filest2_std+exp[e_i]+fileen)
+    else:
+        fpath_std.append(outpath+filest1_std+exp[e_i]+fileen)
+    
+
 s2d = 86400
 
+# get time shapes
+timeold_st =  'Y1997M11'
+timenew_st =  'Y2015M11'
+
+timeold = pd.date_range('1997-11-01','1999-10-01',freq='MS').strftime('%Y-%b').tolist()
+timenew = pd.date_range('2015-11-01','2017-10-01',freq='MS').strftime('%Y-%b').tolist()
+
+timeold_sh = Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_cntrl'+fileen,'r').dimensions['time'].size
+timenew_sh = Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').dimensions['time'].size
+
+
 # get cntrl and loads1617 to compare to
-#cntrl_var = np.squeeze(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
-cntrl_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_old = np.squeeze(Dataset(outpath+'avg_'+year_month1+'_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_old[cntrl_var_old==0] = np.nan
 cntrl_mean_old = np.nanmean(cntrl_var_old)*s2d
 
-cntrl_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_std_old_rd = np.squeeze(Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_std_old_rd[cntrl_std_old_rd==0] = np.nan
+cntrl_std_old = np.nanstd(np.nanmean(cntrl_std_old_rd,axis=(1,2)))*s2d
+
+cntrl_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month2+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_new[cntrl_var_new==0] = np.nan
 cntrl_mean_new = np.nanmean(cntrl_var_new)*s2d
 
+cntrl_std_new_rd = np.squeeze(Dataset(outpath+'concat_'+year_month2+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_std_new_rd[cntrl_std_new_rd==0] = np.nan
+cntrl_std_new = np.nanstd(np.nanmean(cntrl_std_new_rd,axis=(1,2)))*s2d
 
-fulll_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+
+fulll_var_old = np.squeeze(Dataset(outpath+'avg_'+year_month1+'_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_old[fulll_var_old==0] = np.nan
 fulll_mean_old = np.nanmean(fulll_var_old)*s2d
 
-fulll_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_std_old_rd = np.squeeze(Dataset(outpath+'concat_'+year_month1+'_int_avg_100m_50m_loads1617'+fileen,'r').variables[var_nc])*mask_mult
+fulll_std_old_rd[fulll_std_old_rd==0] = np.nan
+fulll_std_old = np.nanstd(np.nanmean(fulll_std_old_rd,axis=(1,2)))*s2d
+
+fulll_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month2+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_var_new[fulll_var_new==0] = np.nan
 fulll_mean_new = np.nanmean(fulll_var_new)*s2d
+
+fulll_std_new_rd = np.squeeze(Dataset(outpath+'concat_'+year_month2+'_int_avg_100m_50m_fulll_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
+fulll_std_new_rd[fulll_std_new_rd==0] = np.nan
+fulll_std_new = np.nanstd(np.nanmean(fulll_std_new_rd,axis=(1,2)))*s2d
 
 #l1617_var = np.squeeze(Dataset(outpath+filest+'loads1617'+fileen,'r').variables[var_nc])*mask_mult
 #l1617_mean = np.nanmean(l1617_var)*s2d
@@ -203,34 +242,43 @@ figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'_bar_norm_compoldnew_recy_diff.png'
+savename = var_name+'_'+year_month1+'_'+year_month2+'_'+region_name+'_'+exp[-1]+'_bar_monthly.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
 
-    roms_var = np.squeeze(Dataset(fpath[n_i],'r').variables[var_nc])*mask_mult
-    roms_neg = np.nanmean(roms_var)*s2d
+    roms_concat = np.squeeze(Dataset(fpath_std[n_i],'r').variables[var_nc])*mask_mult
+    roms_concat[roms_concat==0] = np.nan
+    roms_mon = np.nanmean(roms_std_rd,axis=(1,2))*s2d
 
-    print(exp[n_i],str(roms_neg))
+    ax.bar(
+
     #print(exp[n_i],'up to '+str(np.nanmin(((roms_var-l1617_var)/l1617_var)*100))+'% decrease in productivity')
     #print(exp[n_i],'up to '+str(np.nanmax(((roms_var-l1617_var)/l1617_var)*100))+'% increase in productivity')
-    if 'real' in exp[n_i]:
-        ax.bar(n_i,roms_neg-cntrl_mean_new,color='gray')
-    else:
-        ax.bar(n_i,roms_neg-cntrl_mean_old,color='white',edgecolor='k')
 
-ax.set_ylim(bottom=0,top=(fulll_mean_old-cntrl_mean_old)+1)
+    # calculate percent of full-cntrl
+    #if 'real' in exp[n_i]:
+    #    roms_neg = ((roms_neg_raw-fulll_mean_new)/(fulll_mean_new-cntrl_mean_new))*100
+    #    roms_neg_std = ((roms_std-fulll_mean_new)/(fulll_mean_new-cntrl_mean_new))*100
+    #    ax.bar(n_i,roms_neg,yerr=roms_neg_std,color='gray')
+    #else:
+    #    roms_neg = ((roms_neg_raw-fulll_mean_old)/(fulll_mean_old-cntrl_mean_old))*100
+    #    roms_neg_std = ((roms_std-fulll_mean_old)/(fulll_mean_old-cntrl_mean_old))*100
+    #    ax.bar(n_i,roms_neg,yerr=roms_neg_std,color='white',edgecolor='k')
+
+    print(exp[n_i],str(roms_neg))
+
+ax.set_ylim(bottom=-100,top=10)
 ax.set_xticks(range(len(exp)))
+ax.plot(range(-1,len(exp)+1),np.zeros((len(exp)+2)),linestyle='--',color='black')
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean_old,linestyle='--',color='purple')
 #ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*cntrl_mean_new,linestyle=':',color='purple')
-ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*(fulll_mean_old-cntrl_mean_old),linestyle='--',color='green')
-ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*(fulll_mean_new-cntrl_mean_new),linestyle=':',color='green')
-#ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*l1617_mean,linestyle='--',color='green')
-#ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*potwd_mean,linestyle='--',color='blue')
+#ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*fulll_mean_old,linestyle='--',color='green')
+#ax.plot(range(-1,len(exp)+1),np.ones((len(exp)+2))*fulll_mean_new,linestyle=':',color='green')
 
 ax.set_xticklabels(title_exp,fontsize=12)
 ax.set_xlabel('Scenario',fontsize=axis_tick_size)
-ax.set_ylabel('Integrated NPP 100 m '+cblabel,fontsize=axis_tick_size)
+ax.set_ylabel('% change in NPP',fontsize=axis_tick_size)
 ax.tick_params(axis='both',which='major',labelsize=axis_tick_size)
 
 fig.savefig(savepath+savename,bbox_inches='tight')
