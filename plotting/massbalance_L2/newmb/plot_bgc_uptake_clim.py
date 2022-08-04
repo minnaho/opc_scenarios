@@ -50,14 +50,14 @@ mask_cst[mask_cst==0] = np.nan
 
 if region_name == 'coast':
     mask_mult = mask_cst
-    regtitle = '15 km coast'
+    regtitle = '15 km Coast'
 if region_name == 'grid':
     mask_temp = np.copy(mask_nc)
     mask_temp[:,:20] = np.nan
     mask_temp[:20,:] = np.nan
     mask_temp[-20:,:] = np.nan
     mask_mult = mask_temp
-    regtitle = 'full SCB'
+    regtitle = 'Bightwide'
 if region_name == 'offshore':
     # do opposite of coastal band mask
     mask_temp = np.copy(mask_cst)
@@ -69,7 +69,7 @@ if region_name == 'offshore':
     mask_temp[:20,:] = np.nan
     mask_temp[-20:,:] = np.nan
     mask_mult = mask_temp
-    regtitle = 'offshore'
+    regtitle = 'Offshore'
 
 mask_mult[mask_mult==0] = np.nan
 s2d = 86400
@@ -133,6 +133,7 @@ for e_i in range(len(exp)):
 
         # convert matlab time
         dt = pd.to_datetime(datemat-719529, unit='D')
+        # calculate avg and std over each month
         for m_i in range(1,13):
             clim_bgc[e_i,m_i-1] = np.nanmean(bgc[np.where(dt.month==m_i)[0]])
             clim_bgc_std[e_i,m_i-1] = np.nanstd(bgc[np.where(dt.month==m_i)[0]])
