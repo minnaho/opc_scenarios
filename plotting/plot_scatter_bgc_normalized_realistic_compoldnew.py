@@ -25,7 +25,7 @@ cblabel = 'mmol m$^{-2}$ d$^{-1}$'
 
 #year_month = 'Y1998_M04_06'
 #year_month = 'fullts'
-year_month = '2016'
+year_month = 'fullts'
 
 # scenario names 
 exp = ['PNDN_only',
@@ -45,6 +45,15 @@ title_exp = ['50% N\nReduction 98-99',
              '2016', 
              '50% N\nReduction\n90% Recycle 98-99',
              '2016']
+
+title_exp = ['50% N\nReduction 98-99',
+             '16-17', 
+             '85% N\nReduction 98-99', 
+             '16-17', 
+             '50% N\nReduction\n50% Recycle 98-99', 
+             '16-17', 
+             '50% N\nReduction\n90% Recycle 98-99',
+             '16-17']
 #exp = ['PNDN_only','FNDN_only']
 #title_exp = ['50% N\nReduction','85% N\nReduction']
 
@@ -176,7 +185,7 @@ s2d = 86400
 
 # get cntrl and loads1617 to compare to
 #cntrl_var = np.squeeze(Dataset(outpath+filest+'cntrl'+fileen,'r').variables[var_nc])*mask_mult
-cntrl_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_cntrl'+fileen,'r').variables[var_nc])*mask_mult
+cntrl_var_old = np.squeeze(Dataset(outpath+'avg_fullts_int_avg_100m_50m_cntrl_initap'+fileen,'r').variables[var_nc])*mask_mult
 cntrl_mean_old = np.nanmean(cntrl_var_old)*s2d
 
 cntrl_var_new = np.squeeze(Dataset(outpath+'avg_'+year_month+'_int_avg_100m_50m_cntrl_2012_2017'+fileen,'r').variables[var_nc])*mask_mult
@@ -205,7 +214,7 @@ figh = 4
 
 axis_tick_size = 14
 
-savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'_bar_norm_compoldnew_recy.png'
+savename = var_name+'_'+year_month+'_'+region_name+'_'+exp[-1]+'_bar_norm_compoldnew_recy_newcntrl.png'
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 for n_i in range(len(exp)):
