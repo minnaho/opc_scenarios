@@ -17,43 +17,37 @@ savepath = './figs/'
 
 # scenario ANTH and CTRL
 # put cntrl first in exp list
-#anth1 = 'loads1617'
-#cntrl1 = 'cntrl_initap'
-#anth2 = 'L2SCB_AP'
-#cntrl2 = 'L2SCB'
-anth = 'L2SCB_AP'
-cntrl = 'L2SCB'
+anth2 = 'L2SCB_AP'
+cntrl2 = 'L2SCB'
+anth1 = 'loads1617'
+cntrl1 = 'cntrl_initap'
 
-exp = [cntrl,
-       anth,
+
+exp = [cntrl1,
+       anth1,
+       cntrl2,
+       anth2,
        'PNDN_only_realistic',
        'FNDN_only_realistic',
        'pndn50_realistic',
        'pndn90_realistic'
+       'PNDN_only',
+       'FNDN_only',
+       'pndn50',
+       'pndn90'
+       'fndn50',
+       'fndn90'
                             ]
-
-#exp = [cntrl1,
-#       anth1,
-#       cntrl2,
-#       anth2,
-#       'PNDN_only_realistic',
-#       'FNDN_only_realistic',
-#       'pndn50_realistic',
-#       'pndn90_realistic'
-#       'PNDN_only',
-#       'FNDN_only',
-#       'pndn50',
-#       'pndn90'
-#       'fndn50',
-#       'fndn90'
-#                            ]
 
 title_exp = ['',
              '',
-             '50% N Reduction',
-             '85% N Reduction',
-             '50% N Reduction\n50% Recycle',
-             '50% N Reduction\n90% Recycle']
+             '',
+             '',
+             '\n50% Recycle',
+             '\n90% Recycle']
+
+numexp = 10
+yearlist = [1997,1998,2016,2017]
 
 varn = 'O2'
 matn = 'MATBGCF'
@@ -106,8 +100,8 @@ axfont = 14
 months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 # calculate BGC and uptake terms
-clim_res = np.ones((len(exp),12))*np.nan
-clim_res_std = np.ones((len(exp),12))*np.nan
+clim_res = np.ones((numexp,4))*np.nan
+clim_res_std = np.ones((numexp,4))*np.nan
 
 for e_i in range(len(exp)):
     # read in file
@@ -151,7 +145,7 @@ for e_i in range(len(exp)):
         dt = pd.to_datetime(datemat-719529, unit='D')
 
         # calculate avg and std over each month
-        for m_i in range(1,13):
+        for y_i in range(len(yearlist)):
             clim_res[e_i,m_i-1] = np.nanmean(respir_avg[np.where(dt.month==m_i)[0]])
             clim_res_std[e_i,m_i-1] = np.nanstd(respir_avg[np.where(dt.month==m_i)[0]])
 
@@ -161,7 +155,7 @@ for e_i in range(len(exp)):
 
             # plot scenarios as bars
             ax.bar(range(1,13),clim_res[e_i],yerr=clim_res_std[e_i],color='white',edgecolor='k',capsize=4)
-            ax.set_title(title_exp[e_i],fontsize=axfont)
+            #ax.set_title(title_exp[e_i],fontsize=axfont)
 
             # plot anth as line
             ax.plot(range(1,13),clim_res[exp.index(anth)])
@@ -180,6 +174,6 @@ for e_i in range(len(exp)):
             #if region_name == 'offshore':
             #    ax.set_ylim(bottom=-.5,top=.5)
             #fig.suptitle(title_exp[e_i],fontsize=axfont)
-            savename = 'massb_clim_'+varn+dep+'_'+exp[e_i]+'_'+region_name+'.png'
+            savename = 'massb_avg_'+varn+dep+'_'+exp[e_i]+'_'+region_name+'.png'
             fig.savefig(savepath+savename,bbox_inches='tight')
 
