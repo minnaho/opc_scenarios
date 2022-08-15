@@ -91,13 +91,17 @@ if sce == 'recy':
            'fndn50',
            'fndn90'
                             ]
-    title_exp = [
+    title_exp1 = [cntrl1,
+                 anth1,
                  '50% N Red.',
                  '50% N Red.\n50% Recy.',
                  '50% N Red.\n90% Recy.',
                  '85% N Red.',
                  '85% N Red.\n50% Recy.',
-                 '85% N Red.\n90% Recy.',
+                 '85% N Red.\n90% Recy.']
+    title_exp2=  [
+                 cntrl2,
+                 anth2,
                  '50% N Red.',
                  '50% N Red.\n50% Recy.',
                  '50% N Red.\n90% Recy.',
@@ -123,25 +127,7 @@ if sce == 'nman':
                 ]
 
 
-
-#exp = [cntrl1,
-#       anth1,
-#       cntrl2,
-#       anth2,
-#       'PNDN_only_realistic',
-#       'FNDN_only_realistic',
-#       'pndn50_realistic',
-#       'pndn90_realistic'
-#       'PNDN_only',
-#       'FNDN_only',
-#       'pndn50',
-#       'pndn90'
-#       'fndn50',
-#       'fndn90'
-#                            ]
-
-
-varn = 'O2'
+varn = 'N'
 matn = 'MATBGCF'
 matc = 'MATVARC'
 
@@ -193,8 +179,18 @@ if sce == 'nman':
 figh = 4
 axfont = 14
 
-# calculate BGC and uptake terms
-clim_res1 = np.ones((len(exp1),2))*np.nan
+bmin = 20
+bmax = 200
+
+nbins = 500
+bins_p = np.linspace(bmin,bmax,nbins+1)
+
+# pdf function
+n_p1 = np.zeros((len(exp1),nbins+1))
+n_p2 = np.zeros((len(exp2),nbins+1))
+
+flt1 = np.zeros((len(exp2)))
+flt2 = np.zeros((len(exp2)))
 
 for e_i in range(len(exp1)):
     # read in file
@@ -205,43 +201,46 @@ for e_i in range(len(exp1)):
     datemat = np.squeeze(h5py.File(outpath+fst+exp1[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     # get variables
-    loss = np.squeeze(data['LOSS'])
-    graze = np.squeeze(data['GRAZE'])
-    remin = np.squeeze(data['REMIN'])
+    nitrif = np.squeeze(data['NITRIF'])
+    denitr = np.squeeze(data['DENIT'])
+    seddenitr = np.squeeze(data['SED_DENITR'])
+    no3up = np.squeeze(data['PHOTO_NO3'])
+    nh4up = np.squeeze(data['PHOTO_NH4'])
+    donre = np.squeeze(data['DON_REMIN'])
+    pocre = np.squeeze(data['POC_REMIN'])
     sedre = np.squeeze(data['SED_REMIN'])
+    biore = np.squeeze(data['BIOLOGICAL_RELEASE'])
     ammox = np.squeeze(data['AMMOX'])
-    nit = np.squeeze(data['NIT'])
 
-    # calculate terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
-    
+    dinuptake = no3up+nh4up
+    respir_calc = dinuptake*(117./16)*s2d # too lazy to change var names below
+    respir_calc[respir_calc==0] = np.nan
+
     # average over mask
-    if exp1[e_i] == cntrl1:
-        respir_cntrl1 = np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d
-        respir_cntrl1[respir_cntrl1==0] = np.nan
+    #if exp1[e_i] == cntrl1:
+    #    respir_cntrl1 = np.copy(respir_calc)*s2d
+    #    respir_cntrl1[respir_cntrl1==0] = np.nan
+    #    n,bins,patch = plt.hist(respir_cntrl1.flatten(),bins=nbins,range=([bmin,bmax]))
 
-    else:
+    #else:
+    n_e,bins,patch = plt.hist(respir_calc.flatten(),bins=nbins,range=([bmin,bmax]))
+    n_e = np.append(n_e,0)
+    n_p1[e_i] = n_e
+
+    flt1[e_i] = np.where(~np.isnan(respir_calc.flatten()))[0].shape[0]
     
-        respir_avg1 = (np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d)-respir_cntrl1
+        #respir_avg1 = (respir_calc*s2d)-respir_cntrl1
 
-        respir_avg1[respir_avg1==0] = np.nan
+        #respir_avg1[respir_avg1==0] = np.nan
 
-        # convert matlab time
-        dt = pd.to_datetime(datemat-719529, unit='D')
+        ## convert matlab time
+        #dt = pd.to_datetime(datemat-719529, unit='D')
 
-        # calculate avg and std over each year
-        clim_res1[e_i,0] = np.nanmean(respir_avg1[((dt>timest1)&(dt<timeen1))])
-        clim_res1[e_i,1] = np.nanmean(respir_avg1[((dt>timest2)&(dt<timeen2))])
-        if exp1[e_i] == anth1:
-            print(exp1[e_i],str(clim_res1[e_i,0]))
-
-clim_res_std1 = np.nanstd(clim_res1,axis=1)[2:]
-plt1 = np.nanmean(clim_res1,axis=1)[2:]
-anthmean1 = np.nanmean(clim_res1[1])
-anthstd1 = np.nanstd(clim_res1[1])
-
-
-clim_res2 = np.ones((len(exp2),2))*np.nan
+        ## calculate avg and std over each year
+        #clim_res1[e_i,0] = np.nanmean(respir_avg1[((dt>timest1)&(dt<timeen1))])
+        #clim_res1[e_i,1] = np.nanmean(respir_avg1[((dt>timest2)&(dt<timeen2))])
+        #if exp1[e_i] == anth1:
+        #    print(exp1[e_i],str(clim_res1[e_i,0]))
 
 for e_i in range(len(exp2)):
     # read in file
@@ -252,39 +251,42 @@ for e_i in range(len(exp2)):
     datemat = np.squeeze(h5py.File(outpath+fst+exp2[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     # get variables
-    loss = np.squeeze(data['LOSS'])
-    graze = np.squeeze(data['GRAZE'])
-    remin = np.squeeze(data['REMIN'])
+    nitrif = np.squeeze(data['NITRIF'])
+    denitr = np.squeeze(data['DENIT'])
+    seddenitr = np.squeeze(data['SED_DENITR'])
+    no3up = np.squeeze(data['PHOTO_NO3'])
+    nh4up = np.squeeze(data['PHOTO_NH4'])
+    donre = np.squeeze(data['DON_REMIN'])
+    pocre = np.squeeze(data['POC_REMIN'])
     sedre = np.squeeze(data['SED_REMIN'])
+    biore = np.squeeze(data['BIOLOGICAL_RELEASE'])
     ammox = np.squeeze(data['AMMOX'])
-    nit = np.squeeze(data['NIT'])
 
-    # calculate terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
+    dinuptake = no3up+nh4up
+    respir_calc = dinuptake*(117./16)*s2d # too lazy to change var names below
+    respir_calc[respir_calc==0] = np.nan
+    n_e,bins,patch = plt.hist(respir_calc.flatten(),bins=nbins,range=([bmin,bmax]))
+    n_e = np.append(n_e,0)
+    n_p2[e_i] = n_e
+    flt2[e_i] = np.where(~np.isnan(respir_calc.flatten()))[0].shape[0]
     
     # average over mask
-    if exp2[e_i] == cntrl2:
-        respir_cntrl2 = np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d
-        respir_cntrl2[respir_cntrl2==0] = np.nan
+    #if exp2[e_i] == cntrl2:
+    #    respir_cntrl2 = np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d
+    #    respir_cntrl2[respir_cntrl2==0] = np.nan
 
-    else:
-    
-        respir_avg2 = (np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d)-respir_cntrl2
+    #else:
+    #
+    #    respir_avg2 = (np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d)-respir_cntrl2
 
-        respir_avg2[respir_avg2==0] = np.nan
+    #    respir_avg2[respir_avg2==0] = np.nan
 
-        # convert matlab time
-        dt = pd.to_datetime(datemat-719529, unit='D')
+    #    # convert matlab time
+    #    dt = pd.to_datetime(datemat-719529, unit='D')
 
-        # calculate avg and std over each year
-        clim_res2[e_i,0] = np.nanmean(respir_avg2[((dt>timest3)&(dt<timeen3))])
-        clim_res2[e_i,1] = np.nanmean(respir_avg2[((dt>timest4)&(dt<timeen4))])
-
-clim_res_std2 = np.nanstd(clim_res2,axis=1)[2:]
-plt2 = np.nanmean(clim_res2,axis=1)[2:]
-
-anthmean2 = np.nanmean(clim_res2[1])
-anthstd2 = np.nanstd(clim_res2[1])
+    #    # calculate avg and std over each year
+    #    clim_res2[e_i,0] = np.nanmean(respir_avg2[((dt>timest3)&(dt<timeen3))])
+    #    clim_res2[e_i,1] = np.nanmean(respir_avg2[((dt>timest4)&(dt<timeen4))])
 
 if sce == 'recy':
     ind1 = list(range(6,10))
@@ -296,31 +298,11 @@ if sce == 'nman':
 # plot
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
-# plot scenarios as bars
-ax.bar(ind2,plt2,yerr=clim_res_std2,color='white',edgecolor='k',capsize=4)
-ax.bar(ind1,plt1,yerr=clim_res_std1,color='gray',capsize=4)
-ax.set_title(regtitle,fontsize=axfont)
+for p_i in range(len(exp1)):
+    ax.plot(bins_p,n_p1[p_i]/flt1[p_i],label=title_exp1[e_i])
+for p_i in range(len(exp2)):
+    ax.plot(bins_p,n_p2[p_i]/flt2[p_i],label=title_exp2[e_i])
 
-# plot anth as line
-ax.plot(ind2,np.ones((len(ind2)))*anthmean2)
-ax.fill_between(ind2,np.ones((len(ind2)))*(anthmean2+anthstd2),np.ones((len(ind2)))*(anthmean2-anthstd2),alpha=0.3)
-
-ax.plot(ind1,np.ones((len(ind1)))*anthmean1)
-ax.fill_between(ind1,np.ones((len(ind1)))*anthmean1+anthstd1,np.ones((len(ind1)))*anthmean1-anthstd1,alpha=0.3)
-
-ax.set_ylabel('Respiration mmol O m$^{-3}$ d$^{-1}$',fontsize=axfont)
-ax.tick_params(axis='both',which='major',labelsize=axfont)
-
-ax.set_xticks(range(len(ind1+ind2)))
-ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
-
-#if region_name == 'grid':
-#    ax.set_ylim(bottom=-.75,top=.5)
-#if region_name == 'coast':
-#    ax.set_ylim(bottom=-3,top=.5)
-#if region_name == 'offshore':
-#    ax.set_ylim(bottom=-.5,top=.5)
-
-savename = 'massb_avg_'+varn+dep+'_'+region_name+'_'+timep+'_'+sce+'.png'
+savename = 'pdf_uptakeC_'+region_name+'_'+timep+'_'+sce+'.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
 

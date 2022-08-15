@@ -1,4 +1,5 @@
 # bar plot of difference only
+# plot of each year: 1998,1999,2016,2017
 import sys
 import os
 sys.path.append('/data/project3/minnaho/global/')
@@ -12,22 +13,13 @@ plt.ion()
 
 savepath = './figs/scatter/'
 region_name = 'grid'
-
-# months to average over for offshore/full bight
-# 1997:1997M11-1998M10,1998M11-1999M10,2015M11-2016M10,2016M11-2017M10
-# fulltime:avg per year of 1998,1999,2016,2017
-# junoct - jun to oct
-# springsummer = apr-sep 
-
 # coast time period
 ctimep = '1997'
 # grid/offshore time period
-gtimep = 'sepnov'
+gtimep = 'julnov'
 
-# recycle or N management
-# nman or recy
-#sce = 'recy'
-sce = 'nman'
+# months to average over for offshore/full bight
+# 7 - 11 (hard coded in glob loop)
 
 # ROMS output location
 outpath = '/data/project6/minnaho/opc_scenarios/bgc_flux/'
@@ -43,45 +35,29 @@ yearlist1 = [1998,1999]
 yearlist2 = [2016,2017]
 
 # scenario names 
-# with recycle
-if sce == 'recy':
-    exp1 = ['PNDN_only',
-           'pndn50', 
-           'pndn90', 
-           'FNDN_only',
-           'fndn50',
-           'fndn90']
-    
-    exp2 = ['PNDN_only_realistic',
-           'pndn50_realistic', 
-           'pndn90_realistic',
-           'FNDN_only_realistic']
-    
-    title_exp = ['50% N Red.',
-                 '50% N Red.\n50% Recy.',
-                 '50% N Red.\n90% Recy.',
-                 '85% N Red.',
-                 '85% N Red.\n50% Recy.',
-                 '85% N Red.\n90% Recy.',
-                 '50% N Red.',
-                 '50% N Red.\n50% Recy.',
-                 '50% N Red.\n90% Recy.',
-                 '85% N Red.'
-                 ]
-elif sce == 'nman':
-    # N management
-    exp1 = ['PNDN_only',
-           'FNDN_only']
-    
-    exp2 = ['PNDN_only_realistic',
-           'FNDN_only_realistic']
-    
-    title_exp = ['50% N Red.',
-                 '85% N Red.',
-                 '50% N Red.',
-                 '85% N Red.'
-                 ]
+exp1 = ['PNDN_only',
+       'FNDN_only',
+       ]
 
+exp2 = ['PNDN_only_realistic',
+       'FNDN_only_realistic']
+
+title_exp1 = ['50% N Red.',
+             '85% N Red.']
+
+title_exp2 = ['50% N Red.',
+             '85% N Red.']
+
+#title_exp = ['50% N Reduction\n98-99',
+#             '16-17',
+#             '50% N Reduction\n50% Recycle\n98-99',
+#             '16-17',
+#             '50% N Reduction\n90% Recycle\n98-99',
+#             '16-17',
+#             '85% N Reduction\n98-99',
+#             '16-17',
+#             '85% N Reduction\n50% Recycle',
+#             '85% N Reduction\n90% Recycle']
 
 # mask
 mask_nc = l2grid.mask_nc
@@ -164,23 +140,6 @@ if region_name == 'grid':
     mask_temp[-20:,:] = np.nan
     mask_mult = mask_temp
     regtitle = 'Bightwide'
-#if region_name == 'offshore':
-#    mask7[mask9==1] = 1
-#    mask_mult = mask7
-#    regtitle = 'Offshore'
-
-if region_name == 'offshore':
-    # do opposite of coastal band mask
-    mask_temp = np.copy(mask_cst)
-    mask_temp[mask_temp==1] = 2
-    mask_temp[np.isnan(mask_temp)] = 1
-    mask_temp[mask_temp==2] = 0
-    mask_temp = mask_temp*mask_nc
-    mask_temp[:,:20] = np.nan
-    mask_temp[:20,:] = np.nan
-    mask_temp[-20:,:] = np.nan
-    mask_mult = mask_temp
-    regtitle = 'Offshore'
 
 if region_name == 'mask0':
     mask_mult = mask0
@@ -213,6 +172,25 @@ if region_name == 'mask9':
     mask_mult = mask9
     regtitle = region_name
 
+if region_name == 'offshore':
+    # do opposite of coastal band mask
+    '''
+    mask_temp = np.copy(mask_cst)
+    mask_temp[mask_temp==1] = 2
+    mask_temp[np.isnan(mask_temp)] = 1
+    mask_temp[mask_temp==2] = 0
+    mask_temp = mask_temp*mask_nc
+    mask_temp[:,:20] = np.nan
+    mask_temp[:20,:] = np.nan
+    mask_temp[-20:,:] = np.nan
+    mask_mult = mask_temp
+    regtitle = 'Offshore'
+    '''
+    # faycal's offshore mask7+mask9
+    mask7[mask9==1] = 1 
+    #mask7[mask8==1] = 1 
+    mask_mult = mask7
+
 # seconds to days
 s2d = 86400
 
@@ -231,8 +209,6 @@ for y_i1 in range(len(yearlist1)):
                 flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M??.nc')
             if ctimep == 'springsummer':
                 flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[4-9].nc')
-            if ctimep == 'julnov':
-                flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[7-9].nc')+glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
 
             # try 1997M11-1998M10 and 1997M11-1998M10
             if ctimep == '1997':
@@ -244,8 +220,6 @@ for y_i1 in range(len(yearlist1)):
                 flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M??.nc')
             if gtimep == 'springsummer':
                 flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[4-9].nc')
-            if gtimep == 'junoct':
-                flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[6-9].nc')+glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M10.nc')
             if gtimep == 'julnov':
                 flist = glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[7-9].nc')+glob.glob(outpath+filest+exp1[e_i1]+'_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
             if gtimep == 'sepnov':
@@ -259,7 +233,6 @@ for y_i1 in range(len(yearlist1)):
         for f_i in range(len(flist)):
             temprd = np.squeeze(Dataset(flist[f_i],'r').variables[var_nc])
             cntrlm = np.squeeze(Dataset(outpath+filest+'cntrl_initap_'+var_name+'_'+flist[f_i][flist[f_i].index('Y'):],'r').variables[var_nc])
-            #cntrlm = np.squeeze(Dataset(outpath+filest+'cntrl_'+var_name+'_'+flist[f_i][flist[f_i].index('Y'):],'r').variables[var_nc])
             temparr[f_i] = (temprd - cntrlm)*mask_mult*s2d
             temparr[temparr==0] = np.nan
 
@@ -276,8 +249,6 @@ for y_i1 in range(len(yearlist1)):
         # try 1997M11-1998M10 and 1997M11-1998M10
         if ctimep == '1997':
             flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1]-1)+'M1[1-2].nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[1-9].nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M10.nc')
-        if ctimep == 'julnov':
-            flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[7-9].nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
 
     # only get certain months for grid/offshore 
     elif region_name == 'grid' or region_name == 'offshore':
@@ -285,12 +256,10 @@ for y_i1 in range(len(yearlist1)):
             flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M??.nc')
         if gtimep == 'springsummer':
             flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[4-9].nc')
-        if gtimep == 'junoct':
-            flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[6-9].nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M10.nc')
-        if gtimep == 'sepnov':
-            flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M09.nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
         if gtimep == 'julnov':
             flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M0[7-9].nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
+        if gtimep == 'sepnov':
+            flist = glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M09.nc')+glob.glob(outpath+filest+'loads1617_'+var_name+'_Y'+str(yearlist1[y_i1])+'M1[0-1].nc')
 
         # try 1997M11-1998M10 and 1997M11-1998M10
         if gtimep == '1997':
@@ -300,7 +269,6 @@ for y_i1 in range(len(yearlist1)):
     for f_i in range(len(flist)):
         temprd = np.squeeze(Dataset(flist[f_i],'r').variables[var_nc])
         cntrlm = np.squeeze(Dataset(outpath+filest+'cntrl_initap_'+var_name+'_'+flist[f_i][flist[f_i].index('Y'):],'r').variables[var_nc])
-        #cntrlm = np.squeeze(Dataset(outpath+filest+'cntrl_'+var_name+'_'+flist[f_i][flist[f_i].index('Y'):],'r').variables[var_nc])
         temparr[f_i] = (temprd - cntrlm)*mask_mult*s2d
         temparr[temparr==0] = np.nan
     avganth1[y_i1] = np.nanmean(temparr) 
@@ -319,8 +287,6 @@ for y_i2 in range(len(yearlist2)):
                 flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M??.nc')
             if ctimep == 'springsummer':
                 flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[4-9].nc')
-            if ctimep == 'julnov':
-                flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[7-9].nc')+glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M1[0-1].nc')
 
             # try 2015M11-2016M10 and 2016M11-2017M10
             if ctimep == '1997':
@@ -332,8 +298,6 @@ for y_i2 in range(len(yearlist2)):
                 flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M??.nc')
             if gtimep == 'springsummer':
                 flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[4-9].nc')
-            if gtimep == 'junoct':
-                flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[6-9].nc')+glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M10.nc')
             if gtimep == 'julnov':
                 flist = glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[7-9].nc')+glob.glob(outpath+filest+exp2[e_i2]+'_'+var_name+'_Y'+str(yearlist2[y_i2])+'M1[0-1].nc')
             if gtimep == 'sepnov':
@@ -359,8 +323,6 @@ for y_i2 in range(len(yearlist2)):
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M??.nc')
         if ctimep == 'springsummer': 
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[4-9].nc')
-        if ctimep == 'julnov':
-            flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[7-9].nc')+glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M1[0-1].nc')
 
         # try 2015M11-2016M10 and 2016M11-2017M10
         if ctimep == '1997': 
@@ -372,9 +334,7 @@ for y_i2 in range(len(yearlist2)):
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M??.nc')
         if gtimep == 'springsummer': 
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[4-9].nc')
-        if gtimep == 'junoct': 
-            flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[6-9].nc')+glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M10.nc')
-        if gtimep == 'julnov':
+        if gtimep == 'julnov': 
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M0[7-9].nc')+glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M1[0-1].nc')
         if gtimep == 'sepnov': 
             flist = glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M09.nc')+glob.glob(outpath+filest+'fulll_2012_2017_'+var_name+'_Y'+str(yearlist2[y_i2])+'M1[0-1].nc')
@@ -392,124 +352,124 @@ for y_i2 in range(len(yearlist2)):
     avganth2[y_i2] = np.nanmean(temparr) 
     stdanth2[y_i2] = np.nanstd(np.nanmean(temparr,axis=(1,2)))
 
-#avgp = np.ones((len(title_exp)))*np.nan
-#stdp = np.ones((len(title_exp)))*np.nan
-
-#avganth = np.ones((len(title_exp)))*np.nan
-#stdanth = np.ones((len(title_exp)))*np.nan
-
-avgnum1 = np.nanmean(avgp1,axis=1)
-avgnum2 = np.nanmean(avgp2,axis=1)
-stdnum1 = np.nanstd(avgp1,axis=1)
-stdnum2 = np.nanstd(avgp2,axis=1)
-
-avganthnum1 = np.nanmean((avganth1))
-avganthnum2 = np.nanmean((avganth2))
-stdanthnum1 = np.nanstd((avganth1))
-stdanthnum2 = np.nanstd((avganth2))
-
-#avgp[0] = np.nanmean((avgp1[0]))
-#avgp[1] = np.nanmean((avgp2[0]))
-#avgp[2] = np.nanmean((avgp1[1]))
-#avgp[3] = np.nanmean((avgp2[1]))
-#avgp[4] = np.nanmean((avgp1[2]))
-#avgp[5] = np.nanmean((avgp2[2]))
-#avgp[6] = np.nanmean((avgp1[3]))
-#avgp[7] = np.nanmean((avgp2[3]))
-#avgp[8] = np.nanmean((avgp1[4]))
-#avgp[9] = np.nanmean((avgp1[5]))
+#avgp98 = ((avgp1[:,0]-avganth1[0])/avganth1[0])*100
+#avgp99 = ((avgp1[:,1]-avganth1[1])/avganth1[1])*100
+#avgp16 = ((avgp2[:,0]-avganth2[0])/avganth2[0])*100
+#avgp17 = ((avgp2[:,1]-avganth2[1])/avganth2[1])*100
 #
-#stdp[0] = np.nanstd((avgp1[0]))
-#stdp[1] = np.nanstd((avgp2[0]))
-#stdp[2] = np.nanstd((avgp1[1]))
-#stdp[3] = np.nanstd((avgp2[1]))
-#stdp[4] = np.nanstd((avgp1[2]))
-#stdp[5] = np.nanstd((avgp2[2]))
-#stdp[6] = np.nanstd((avgp1[3]))
-#stdp[7] = np.nanstd((avgp2[3]))
-#stdp[8] = np.nanstd((avgp1[4]))
-#stdp[9] = np.nanstd((avgp1[5]))
+#stdp98 = (stdp1[:,0]/avganth1[0])*100
+#stdp99 = (stdp1[:,1]/avganth1[1])*100
+#stdp16 = (stdp2[:,0]/avganth2[0])*100
+#stdp17 = (stdp2[:,1]/avganth2[1])*100
 
-#avganth[:] = np.nanmean((avganth1))
-#avganth[1:-2:2] = np.nanmean((avganth2))
+avgp98 = avgp1[:,0]
+avgp99 = avgp1[:,1]
+avgp16 = avgp2[:,0]
+avgp17 = avgp2[:,1]
 
-#stdanth[:] = np.nanstd((avganth1))
-#stdanth[1:-2:2] = np.nanstd((avganth2))
+anth98 = avganth1[0]
+anth99 = avganth1[1]
+anth16 = avganth2[0]
+anth17 = avganth2[1]
 
-if sce == 'recy':
-    figw = 16
-if sce == 'nman':
-    figw = 8
+stdp98 = stdp1[:,0]
+stdp99 = stdp1[:,1]
+stdp16 = stdp2[:,0]
+stdp17 = stdp2[:,1]
 
+yb = -110
+yt = 20
+
+saveend = '_Nmangement_'+ctimep+'_'+gtimep+'.png'
+
+# 98
+figw = 4
 figh = 4
-
 axsize = 14
-
-if sce == 'recy':
-    ind1 = list(range(0,6))
-    ind2 = list(range(6,len(title_exp)))
-if sce == 'nman':
-    ind1 = list(range(0,2))
-    ind2 = list(range(2,len(title_exp)))
-
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-
-#if region_name == 'grid' or region_name == 'coast':
-if region_name == 'grid' or region_name == 'coast' or region_name == 'offshore':
-    ax.bar(np.arange(len(title_exp))[ind1],avgnum1,yerr=stdnum1,color='white',edgecolor='k',capsize=4)
-    ax.bar(np.arange(len(title_exp))[ind2],avgnum2,yerr=stdnum2,color='gray',capsize=4)
-    ax.plot(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*avganthnum1)
-    ax.fill_between(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*(avganthnum1+stdanthnum1),np.ones((len(title_exp)))[ind1]*(avganthnum1-stdanthnum1),alpha=0.3)
-    ax.plot(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*avganthnum2)
-    ax.fill_between(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*(avganthnum2+stdanthnum2),np.ones((len(title_exp)))[ind2]*(avganthnum2-stdanthnum2),alpha=0.3)
-
-# comment this for old cntrl
+ax.bar(np.arange(len(title_exp1)),avgp98,yerr=stdp98,color='white',edgecolor='k',capsize=4)
+#ax.set_ylim(bottom=yb,top=yt)
+#if region_name == 'coast':
+#    ax.set_ylim(bottom=-0.5,top=14)
+#if region_name == 'grid':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
 #if region_name == 'offshore':
-#    ax.bar(np.arange(len(title_exp))[ind1],avgnum1,yerr=stdnum1,color='white',edgecolor='k',capsize=4)
-#    ax2 = ax.twinx()
-#    ax2.bar(np.arange(len(title_exp))[ind2],avgnum2,yerr=stdnum2,color='gray',capsize=4)
-#    ax2.tick_params(axis='both',which='major',labelsize=axsize)
-#    ax.plot(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*avganthnum1)
-#    ax.fill_between(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*(avganthnum1+stdanthnum1),np.ones((len(title_exp)))[ind1]*(avganthnum1-stdanthnum1),alpha=0.3)
-#    ax2.plot(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*avganthnum2,color='orange')
-#    ax2.fill_between(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*(avganthnum2+stdanthnum2),np.ones((len(title_exp)))[ind2]*(avganthnum2-stdanthnum2),alpha=0.3,color='orange')
-
-if sce == 'nman':
-    if region_name == 'coast':
-        #ax.set_ylim(bottom=-0.5,top=15)
-        ax.set_ylim(bottom=-0.5,top=18.5) # old cntrl
-    if region_name == 'grid':
-        ax.set_ylim(bottom=-1,top=4)
-        #ax.set_ylim(bottom=-0.5,top=10) # old cntrl
-    if region_name == 'offshore':
-        #ax.set_ylim(bottom=-1,top=2)
-        #ax2.set_ylim(bottom=-1,top=11.5)
-        ax.set_ylim(bottom=-1,top=8.5)
-if sce == 'recy':
-    if region_name == 'coast':
-        ax.set_ylim(bottom=-0.5,top=15)
-    if region_name == 'grid':
-        #ax.set_ylim(bottom=-1,top=4)
-        ax.set_ylim(bottom=-1,top=8) # old cntrl
-    if region_name == 'offshore':
-        ax.set_ylim(bottom=-1,top=2)
-        ax2.set_ylim(bottom=-1,top=11.5)
-
-#ax.plot(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*avganthnum1)
-#ax.fill_between(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*(avganthnum1+stdanthnum1),np.ones((len(title_exp)))[ind1]*(avganthnum1-stdanthnum1),alpha=0.3)
-#
-#ax.plot(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*avganthnum2)
-#ax.fill_between(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*(avganthnum2+stdanthnum2),np.ones((len(title_exp)))[ind2]*(avganthnum2-stdanthnum2),alpha=0.3)
-
-ax.set_xticks(range(len(title_exp)))
-ax.set_xticklabels(title_exp,fontsize=axsize,rotation=90)
-ax.set_ylabel('Integrated NPP 100 m '+cblabel,fontsize=axsize)
-ax.set_title(regtitle,fontsize=axsize)
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+ax.plot(range(len(title_exp1)),np.ones((len(title_exp1)))*anth98)
+ax.set_xticks(range(len(title_exp1)))
+ax.set_xticklabels(title_exp1,fontsize=axsize)
+ax.set_ylabel('% change integrated NPP',fontsize=axsize)
+ax.set_title('1998',fontsize=axsize)
 ax.tick_params(axis='both',which='major',labelsize=axsize)
-
-savename = var_name+'_avg_4years_yearly_diff'+region_name+'_'+ctimep+'_'+gtimep+'_rearrange_'+sce+'.png'
-
+savename = var_name+'_avg_4years_byyear_diff'+region_name+'_98'+saveend+'.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
 print(savename)
-#plt.close()
 
+# 99
+figw = 4
+figh = 4
+axsize = 14
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+ax.bar(np.arange(len(title_exp1)),avgp99,yerr=stdp99,color='white',edgecolor='k',capsize=4)
+#ax.set_ylim(bottom=yb,top=yt)
+#if region_name == 'coast':
+#    ax.set_ylim(bottom=-0.5,top=14)
+#if region_name == 'grid':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+#if region_name == 'offshore':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+ax.plot(range(len(title_exp1)),np.ones((len(title_exp1)))*anth99)
+ax.set_xticks(range(len(title_exp1)))
+ax.set_xticklabels(title_exp1,fontsize=axsize)
+ax.set_ylabel('% change integrated NPP',fontsize=axsize)
+ax.set_title('1999',fontsize=axsize)
+ax.tick_params(axis='both',which='major',labelsize=axsize)
+savename = var_name+'_avg_4years_byyear_perc'+region_name+'_99'+saveend+'.png'
+fig.savefig(savepath+savename,bbox_inches='tight')
+print(savename)
+
+# 16
+figw = 4
+figh = 4
+axsize = 14
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+ax.bar(range(len(title_exp2)),avgp16,yerr=stdp16,color='gray',capsize=4)
+#ax.set_ylim(bottom=yb,top=yt)
+#if region_name == 'coast':
+#    ax.set_ylim(bottom=-0.5,top=14)
+#if region_name == 'grid':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+#if region_name == 'offshore':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+ax.plot(range(len(title_exp2)),np.ones((len(title_exp2)))*anth16)
+ax.set_xticks(range(len(title_exp2)))
+ax.set_xticklabels(title_exp2,fontsize=axsize)
+ax.set_ylabel('% change integrated NPP',fontsize=axsize)
+ax.set_title('2016',fontsize=axsize)
+ax.tick_params(axis='both',which='major',labelsize=axsize)
+savename = var_name+'_avg_4years_byyear_perc'+region_name+'_16'+saveend+'.png'
+fig.savefig(savepath+savename,bbox_inches='tight')
+print(savename)
+
+# 17
+figw = 4
+figh = 4
+axsize = 14
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+ax.bar(range(len(title_exp2)),avgp17,yerr=stdp17,color='gray',capsize=4)
+#ax.set_ylim(bottom=yb,top=yt)
+#if region_name == 'coast':
+#    ax.set_ylim(bottom=-0.5,top=14)
+#if region_name == 'grid':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+#if region_name == 'offshore':
+#    ax.set_ylim(bottom=-1.5,top=4.7)
+ax.plot(range(len(title_exp2)),np.ones((len(title_exp2)))*anth17)
+ax.set_xticks(range(len(title_exp2)))
+ax.set_xticklabels(title_exp2,fontsize=axsize)
+ax.set_ylabel('% change integrated NPP',fontsize=axsize)
+ax.set_title('2017',fontsize=axsize)
+ax.tick_params(axis='both',which='major',labelsize=axsize)
+savename = var_name+'_avg_4years_byyear_perc'+region_name+'_17'+saveend+'.png'
+fig.savefig(savepath+savename,bbox_inches='tight')
+print(savename)

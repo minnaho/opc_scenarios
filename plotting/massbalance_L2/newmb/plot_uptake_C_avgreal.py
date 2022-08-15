@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 plt.ion()
 
-region_name = 'grid'
+region_name = 'coast'
 
 outpath = './budget_ww/'
 savepath = './figs/'
@@ -141,7 +141,7 @@ if sce == 'nman':
 #                            ]
 
 
-varn = 'O2'
+varn = 'N'
 matn = 'MATBGCF'
 matc = 'MATVARC'
 
@@ -205,16 +205,20 @@ for e_i in range(len(exp1)):
     datemat = np.squeeze(h5py.File(outpath+fst+exp1[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     # get variables
-    loss = np.squeeze(data['LOSS'])
-    graze = np.squeeze(data['GRAZE'])
-    remin = np.squeeze(data['REMIN'])
+    nitrif = np.squeeze(data['NITRIF'])
+    denitr = np.squeeze(data['DENIT'])
+    seddenitr = np.squeeze(data['SED_DENITR'])
+    no3up = np.squeeze(data['PHOTO_NO3'])
+    nh4up = np.squeeze(data['PHOTO_NH4'])
+    donre = np.squeeze(data['DON_REMIN'])
+    pocre = np.squeeze(data['POC_REMIN'])
     sedre = np.squeeze(data['SED_REMIN'])
+    biore = np.squeeze(data['BIOLOGICAL_RELEASE'])
     ammox = np.squeeze(data['AMMOX'])
-    nit = np.squeeze(data['NIT'])
 
-    # calculate terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
-    
+    dinuptake = no3up+nh4up
+    respir_calc = dinuptake*(117./16) # too lazy to change var names below
+
     # average over mask
     if exp1[e_i] == cntrl1:
         respir_cntrl1 = np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d
@@ -252,15 +256,19 @@ for e_i in range(len(exp2)):
     datemat = np.squeeze(h5py.File(outpath+fst+exp2[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     # get variables
-    loss = np.squeeze(data['LOSS'])
-    graze = np.squeeze(data['GRAZE'])
-    remin = np.squeeze(data['REMIN'])
+    nitrif = np.squeeze(data['NITRIF'])
+    denitr = np.squeeze(data['DENIT'])
+    seddenitr = np.squeeze(data['SED_DENITR'])
+    no3up = np.squeeze(data['PHOTO_NO3'])
+    nh4up = np.squeeze(data['PHOTO_NH4'])
+    donre = np.squeeze(data['DON_REMIN'])
+    pocre = np.squeeze(data['POC_REMIN'])
     sedre = np.squeeze(data['SED_REMIN'])
+    biore = np.squeeze(data['BIOLOGICAL_RELEASE'])
     ammox = np.squeeze(data['AMMOX'])
-    nit = np.squeeze(data['NIT'])
 
-    # calculate terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
+    dinuptake = no3up+nh4up
+    respir_calc = dinuptake*(117./16) # too lazy to change var names below
     
     # average over mask
     if exp2[e_i] == cntrl2:
@@ -308,7 +316,7 @@ ax.fill_between(ind2,np.ones((len(ind2)))*(anthmean2+anthstd2),np.ones((len(ind2
 ax.plot(ind1,np.ones((len(ind1)))*anthmean1)
 ax.fill_between(ind1,np.ones((len(ind1)))*anthmean1+anthstd1,np.ones((len(ind1)))*anthmean1-anthstd1,alpha=0.3)
 
-ax.set_ylabel('Respiration mmol O m$^{-3}$ d$^{-1}$',fontsize=axfont)
+ax.set_ylabel('Uptake mmol C m$^{-3}$ d$^{-1}$',fontsize=axfont)
 ax.tick_params(axis='both',which='major',labelsize=axfont)
 
 ax.set_xticks(range(len(ind1+ind2)))
@@ -321,6 +329,6 @@ ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
 #if region_name == 'offshore':
 #    ax.set_ylim(bottom=-.5,top=.5)
 
-savename = 'massb_avg_'+varn+dep+'_'+region_name+'_'+timep+'_'+sce+'.png'
+savename = 'massb_avg_'+varn+dep+'_uptakeC_'+region_name+'_'+timep+'_'+sce+'.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
 

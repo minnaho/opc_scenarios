@@ -10,12 +10,10 @@ import matplotlib.pyplot as plt
 
 plt.ion()
 
-region_name = 'grid'
+region_name = 'coast'
 
 outpath = './budget_ww/'
 savepath = './figs/'
-
-timep = 'julnov'
 
 sce = 'recy'
 
@@ -32,95 +30,39 @@ if region_name == 'coast':
     timeen4 = '1999-11-01'
 
 if region_name == 'offshore' or region_name == 'grid':
-    #jul-nov
-    if timep == 'julnov':
-        timest1 = '2016-07-01'
-        timeen1 = '2016-12-01'
-        timest2 = '2017-07-01'
-        timeen2 = '2017-12-01'
+    timest1 = '2016-08-01'
+    timeen1 = '2016-12-31'
+    timest2 = '2017-08-01'
+    timeen2 = '2017-12-31'
 
-        timest3 = '1998-07-01'
-        timeen3 = '1998-11-30'
-        timest4 = '1999-07-01'
-        timeen4 = '1999-11-30'
-
-    #full timeperiod
-    if timep == 'fullts':
-        timest1 = '2015-11-01'
-        timeen1 = '2016-12-01'
-        timest2 = '2016-11-01'
-        timeen2 = '2017-12-01'
-
-        timest3 = '1997-11-01'
-        timeen3 = '1998-11-30'
-        timest4 = '1998-11-01'
-        timeen4 = '1999-11-30'
-
-    #sep-nov
-    if timep == 'sepnov':
-        timest1 = '2016-09-01'
-        timeen1 = '2016-12-01'
-        timest2 = '2017-09-01'
-        timeen2 = '2017-12-01'
-
-        timest3 = '1998-09-01'
-        timeen3 = '1998-12-01'
-        timest4 = '1998-09-01'
-        timeen4 = '1999-12-01'
+    timest3 = '1998-08-01'
+    timeen3 = '1998-12-31'
+    timest4 = '1999-08-01'
+    timeen4 = '1999-12-31'
 
 # scenario ANTH and CTRL
-anth1 = 'L2SCB_AP'
-cntrl1 = 'L2SCB'
 anth2 = 'loads1617'
 cntrl2 = 'cntrl_initap'
+anth1 = 'L2SCB_AP'
+cntrl1 = 'L2SCB'
 
-if sce == 'recy':
-    exp1 = [cntrl1,
-           anth1,
-           'PNDN_only_realistic',
-           'pndn50_realistic',
-           'pndn90_realistic',
-           'FNDN_only_realistic'
-                                ]
-    exp2 = [cntrl2,
-           anth2,
-           'PNDN_only',
-           'pndn50',
-           'pndn90',
-           'FNDN_only',
-           'fndn50',
-           'fndn90'
+exp1 = [cntrl1,
+       anth1,
+       'PNDN_only_realistic',
+       'FNDN_only_realistic',
+       'pndn50_realistic',
+       'pndn90_realistic'
                             ]
-    title_exp = [
-                 '50% N Red.',
-                 '50% N Red.\n50% Recy.',
-                 '50% N Red.\n90% Recy.',
-                 '85% N Red.',
-                 '85% N Red.\n50% Recy.',
-                 '85% N Red.\n90% Recy.',
-                 '50% N Red.',
-                 '50% N Red.\n50% Recy.',
-                 '50% N Red.\n90% Recy.',
-                 '85% N Red.',
-                ]
 
-if sce == 'nman':
-    exp1 = [cntrl1,
-           anth1,
-           'PNDN_only_realistic',
-           'FNDN_only_realistic'
-                                ]
-    exp2 = [cntrl2,
-           anth2,
-           'PNDN_only',
-           'FNDN_only'
+exp2 = [cntrl2,
+       anth2,
+       'PNDN_only',
+       'pndn50',
+       'pndn90',
+       'FNDN_only',
+       'fndn50',
+       'fndn90'
                             ]
-    title_exp = [
-                 '50% N Red.',
-                 '85% N Red.',
-                 '50% N Red.',
-                 '85% N Red.'
-                ]
 
 
 
@@ -140,8 +82,14 @@ if sce == 'nman':
 #       'fndn90'
 #                            ]
 
+title_exp = ['',
+             '',
+             '50% N Reduction',
+             '85% N Reduction',
+             '50% N Reduction\n50% Recycle',
+             '50% N Reduction\n90% Recycle']
 
-varn = 'O2'
+varn = 'N'
 matn = 'MATBGCF'
 matc = 'MATVARC'
 
@@ -167,31 +115,29 @@ if region_name == 'grid':
     regtitle = 'Bightwide'
 if region_name == 'offshore':
     # do opposite of coastal band mask
+    #mask_temp = np.copy(mask_cst)
+    #mask_temp[mask_temp==1] = 2
+    #mask_temp[np.isnan(mask_temp)] = 1
+    #mask_temp[mask_temp==2] = 0
+    #mask_temp = mask_temp*mask_nc
+    #mask_temp[:,:20] = np.nan
+    #mask_temp[:20,:] = np.nan
+    #mask_temp[-20:,:] = np.nan
+    #mask_mult = mask_temp
     regtitle = 'Offshore'
-    mask_temp = np.copy(mask_cst)
-    mask_temp[mask_temp==1] = 2
-    mask_temp[np.isnan(mask_temp)] = 1
-    mask_temp[mask_temp==2] = 0
-    mask_temp = mask_temp*mask_nc
-    mask_temp[:,:20] = np.nan
-    mask_temp[:20,:] = np.nan
-    mask_temp[-20:,:] = np.nan
-    mask_mult = mask_temp
-    #regtitle = 'Offshore'
-    #mask7[mask9==1] = 1
-    #mask_mult = mask7
+    mask7[mask9==1] = 1
+    mask_mult = mask7
+    regtitle = 'Offshore'
 
 
 mask_mult[mask_mult==0] = np.nan
 s2d = 86400
 
-if sce == 'recy':
-    figw = 16
-if sce == 'nman':
-    figw = 8
-
+figw = 16
 figh = 4
 axfont = 14
+
+months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 # calculate BGC and uptake terms
 clim_res1 = np.ones((len(exp1),2))*np.nan
@@ -205,16 +151,20 @@ for e_i in range(len(exp1)):
     datemat = np.squeeze(h5py.File(outpath+fst+exp1[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     # get variables
-    loss = np.squeeze(data['LOSS'])
-    graze = np.squeeze(data['GRAZE'])
-    remin = np.squeeze(data['REMIN'])
+    nitrif = np.squeeze(data['NITRIF'])
+    denitr = np.squeeze(data['DENIT'])
+    seddenitr = np.squeeze(data['SED_DENITR'])
+    no3up = np.squeeze(data['PHOTO_NO3'])
+    nh4up = np.squeeze(data['PHOTO_NH4'])
+    donre = np.squeeze(data['DON_REMIN'])
+    pocre = np.squeeze(data['POC_REMIN'])
     sedre = np.squeeze(data['SED_REMIN'])
+    biore = np.squeeze(data['BIOLOGICAL_RELEASE'])
     ammox = np.squeeze(data['AMMOX'])
-    nit = np.squeeze(data['NIT'])
 
-    # calculate terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
-    
+    dinuptake = no3up+nh4up
+    respir_calc = dinuptake # too lazy to change var names below
+
     # average over mask
     if exp1[e_i] == cntrl1:
         respir_cntrl1 = np.nanmean(((respir_calc)*mask_mult),axis=(1,2))*s2d
@@ -286,33 +236,35 @@ plt2 = np.nanmean(clim_res2,axis=1)[2:]
 anthmean2 = np.nanmean(clim_res2[1])
 anthstd2 = np.nanstd(clim_res2[1])
 
+exit()
+
 if sce == 'recy':
-    ind1 = list(range(6,10))
-    ind2 = list(range(0,6))
+    ind1 = list(range(0,6))
+    ind2 = list(range(6,10))
 if sce == 'nman':
-    ind2 = list(range(0,2))
-    ind1 = list(range(2,4))
+    ind1 = list(range(0,2))
+    ind2 = list(range(2,4))
 
 # plot
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 
 # plot scenarios as bars
-ax.bar(ind2,plt2,yerr=clim_res_std2,color='white',edgecolor='k',capsize=4)
-ax.bar(ind1,plt1,yerr=clim_res_std1,color='gray',capsize=4)
+ax.bar(ind1,plt1,yerr=clim_res_std1,color='white',edgecolor='k',capsize=4)
+ax.bar(ind2,plt2,yerr=clim_res_std2,color='gray',capsize=4)
 ax.set_title(regtitle,fontsize=axfont)
 
 # plot anth as line
-ax.plot(ind2,np.ones((len(ind2)))*anthmean2)
-ax.fill_between(ind2,np.ones((len(ind2)))*(anthmean2+anthstd2),np.ones((len(ind2)))*(anthmean2-anthstd2),alpha=0.3)
-
 ax.plot(ind1,np.ones((len(ind1)))*anthmean1)
-ax.fill_between(ind1,np.ones((len(ind1)))*anthmean1+anthstd1,np.ones((len(ind1)))*anthmean1-anthstd1,alpha=0.3)
+ax.fill_between(ind1,np.ones((len(ind1)))*anthmean1+anthstd1,np.ones((len(ind1)))*anthmean1+anthstd1,alpha=0.3)
 
-ax.set_ylabel('Respiration mmol O m$^{-3}$ d$^{-1}$',fontsize=axfont)
+ax.plot(ind2,np.ones((len(ind2)))*anthmean2)
+ax.fill_between(ind2,np.ones((len(ind2)))*anthmean2+anthstd2,np.ones((len(ind2)))*anthmean2+anthstd2,alpha=0.3)
+
+ax.set_ylabel('Uptake\nmmol N m$^{-3}$ d$^{-1}$',fontsize=axfont)
 ax.tick_params(axis='both',which='major',labelsize=axfont)
 
-ax.set_xticks(range(len(ind1+ind2)))
-ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
+#ax.set_xticks(range(1,13))
+#ax.set_xticklabels(months,fontsize=axfont)
 
 #if region_name == 'grid':
 #    ax.set_ylim(bottom=-.75,top=.5)
@@ -321,6 +273,6 @@ ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
 #if region_name == 'offshore':
 #    ax.set_ylim(bottom=-.5,top=.5)
 
-savename = 'massb_avg_'+varn+dep+'_'+region_name+'_'+timep+'_'+sce+'.png'
+savename = 'massb_avg_'+varn+dep+'_uptake_'+region_name+'.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
 

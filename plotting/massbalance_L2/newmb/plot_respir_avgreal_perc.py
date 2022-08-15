@@ -17,8 +17,7 @@ savepath = './figs/'
 
 timep = 'julnov'
 
-sce = 'recy'
-
+sce = 'nman'
 
 if region_name == 'coast':
     timest1 = '2015-11-01'
@@ -235,11 +234,6 @@ for e_i in range(len(exp1)):
         if exp1[e_i] == anth1:
             print(exp1[e_i],str(clim_res1[e_i,0]))
 
-clim_res_std1 = np.nanstd(clim_res1,axis=1)[2:]
-plt1 = np.nanmean(clim_res1,axis=1)[2:]
-anthmean1 = np.nanmean(clim_res1[1])
-anthstd1 = np.nanstd(clim_res1[1])
-
 
 clim_res2 = np.ones((len(exp2),2))*np.nan
 
@@ -280,11 +274,26 @@ for e_i in range(len(exp2)):
         clim_res2[e_i,0] = np.nanmean(respir_avg2[((dt>timest3)&(dt<timeen3))])
         clim_res2[e_i,1] = np.nanmean(respir_avg2[((dt>timest4)&(dt<timeen4))])
 
-clim_res_std2 = np.nanstd(clim_res2,axis=1)[2:]
-plt2 = np.nanmean(clim_res2,axis=1)[2:]
+anthmean1 = np.nanmean(clim_res1[1])
+anthstd1 = np.nanstd(clim_res1[1])
+
+plt1_temp = np.nanmean(clim_res1,axis=1)[2:]
+# calculate % change from anth
+plt1 = ((plt1_temp-anthmean1)/anthmean1)*100
+
+clim_res_std1_temp = np.nanstd(clim_res1,axis=1)[2:]
+clim_res_std1 = (clim_res_std1_temp/anthmean1)*100
+
 
 anthmean2 = np.nanmean(clim_res2[1])
 anthstd2 = np.nanstd(clim_res2[1])
+
+plt2_temp = np.nanmean(clim_res2,axis=1)[2:]
+# calculate % change from anth
+plt2 = ((plt2_temp-anthmean2)/anthmean2)*100
+
+clim_res_std2_temp = np.nanstd(clim_res2,axis=1)[2:]
+clim_res_std2 = (clim_res_std2_temp/anthmean2)*100
 
 if sce == 'recy':
     ind1 = list(range(6,10))
@@ -302,25 +311,29 @@ ax.bar(ind1,plt1,yerr=clim_res_std1,color='gray',capsize=4)
 ax.set_title(regtitle,fontsize=axfont)
 
 # plot anth as line
-ax.plot(ind2,np.ones((len(ind2)))*anthmean2)
-ax.fill_between(ind2,np.ones((len(ind2)))*(anthmean2+anthstd2),np.ones((len(ind2)))*(anthmean2-anthstd2),alpha=0.3)
-
-ax.plot(ind1,np.ones((len(ind1)))*anthmean1)
-ax.fill_between(ind1,np.ones((len(ind1)))*anthmean1+anthstd1,np.ones((len(ind1)))*anthmean1-anthstd1,alpha=0.3)
+ax.plot(ind2+ind1,np.zeros((len(ind2+ind1))))
+ax.plot(ind2+ind1,np.ones((len(ind2+ind1)))*-100,linestyle='--',color='k')
 
 ax.set_ylabel('Respiration mmol O m$^{-3}$ d$^{-1}$',fontsize=axfont)
-ax.tick_params(axis='both',which='major',labelsize=axfont)
+ax.tick_params(axis='both',which='major',labelsize=axfont,right=True)
 
 ax.set_xticks(range(len(ind1+ind2)))
-ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
+if sce == 'recy':
+    ax.set_xticklabels(title_exp,fontsize=axfont,rotation=90)
+else:
+    ax.set_xticklabels(title_exp,fontsize=axfont)
 
-#if region_name == 'grid':
-#    ax.set_ylim(bottom=-.75,top=.5)
+if region_name == 'grid':
+    if sce == 'nman':
+        ax.set_ylim(bottom=-110,top=40)
+    else:
+        ax.set_ylim(bottom=-140,top=170)
+        ax.yaxis.set_ticks(np.arange(-150,200,50))
 #if region_name == 'coast':
 #    ax.set_ylim(bottom=-3,top=.5)
 #if region_name == 'offshore':
 #    ax.set_ylim(bottom=-.5,top=.5)
 
-savename = 'massb_avg_'+varn+dep+'_'+region_name+'_'+timep+'_'+sce+'.png'
+savename = 'massb_perc_'+varn+dep+'_'+region_name+'_'+timep+'_'+sce+'.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
 

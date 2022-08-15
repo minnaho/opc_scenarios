@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 savepath = './figs/scatter/'
-region_name = 'offshore'
+region_name = 'grid'
 
 # months to average over for offshore/full bight
 # 7 - 11 (hard coded in glob loop)
@@ -332,15 +332,16 @@ ax.set_ylim(bottom=-120,top=10)
 #    ax.set_ylim(bottom=-1.5,top=4.7)
 
 ax.plot(range(len(title_exp)),np.ones((len(title_exp)))*0)
+ax.plot(range(len(title_exp)),np.ones((len(title_exp)))*-100,color='k',linestyle='--')
 
 xloc = np.arange(len(title_exp))+.5
 #xloc[-2:] = xloc[-2:]-0.5
 
 ax.set_xticks(xloc)
 ax.set_xticklabels(title_exp,fontsize=axsize)
-ax.set_ylabel('Integrated NPP 100 m '+cblabel,fontsize=axsize)
+ax.set_ylabel('% Change in Algal Production',fontsize=axsize)
 ax.set_title(regtitle,fontsize=axsize)
-ax.tick_params(axis='both',which='major',labelsize=axsize)
+ax.tick_params(axis='both',which='major',right=True,labelsize=axsize)
 
 savename = var_name+'_avg_4years_yearly_perc'+region_name+'_Nmanagement.png'
 fig.savefig(savepath+savename,bbox_inches='tight')
