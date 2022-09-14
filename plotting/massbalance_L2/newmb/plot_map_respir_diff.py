@@ -1,3 +1,5 @@
+# change to crtopy_update environment before running
+# conda activate cartopy_update
 import os
 import sys
 sys.path.append('/data/project3/minnaho/global/')
@@ -84,7 +86,9 @@ if sce == 'recy':
            'PNDN_only_realistic',
            'pndn50_realistic',
            'pndn90_realistic',
-           'FNDN_only_realistic'
+           'FNDN_only_realistic',
+            'fndn50_realistic',
+            'fndn90_realistic'
                                 ]
     exp2 = [cntrl2,
            anth2,
@@ -99,7 +103,9 @@ if sce == 'recy':
                  '50% N Red.',
                  '50% N Red.\n50% Recy.',
                  '50% N Red.\n90% Recy.',
-                 '85% N Red.'
+                 '85% N Red.',
+                 '85% N Red.\n50% Recy.',
+                 '85% N Red.\n90% Recy.'
                 ]
     title_exp2 = ['Land-based',
                  '50% N Red.',

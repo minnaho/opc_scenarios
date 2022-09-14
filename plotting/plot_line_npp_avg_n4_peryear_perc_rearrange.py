@@ -48,27 +48,30 @@ exp1 = ['PNDN_only',
 exp2 = ['PNDN_only_realistic',
        'pndn50_realistic', 
        'pndn90_realistic',
-       'FNDN_only_realistic']
-
-title_exp = ['50% N Red.',
-             '50% N Red.\n50% Recy.',
-             '50% N Red.\n90% Recy.',
-             '85% N Red.',
-             '85% N Red.\n50% Recy.',
-             '85% N Red.\n90% Recy.',
-             '50% N Red.',
-             '50% N Red.\n50% Recy.',
-             '50% N Red.\n90% Recy.',
-             '85% N Red.'
-             ]
+       'FNDN_only_realistic',
+        'fndn50_realistic',
+        'fndn90_realistic'
+        ]
 
 #title_exp = ['50% N Red.',
 #             '50% N Red.\n50% Recy.',
 #             '50% N Red.\n90% Recy.',
 #             '85% N Red.',
 #             '85% N Red.\n50% Recy.',
-#             '85% N Red.\n90% Recy.'
+#             '85% N Red.\n90% Recy.',
+#             '50% N Red.',
+#             '50% N Red.\n50% Recy.',
+#             '50% N Red.\n90% Recy.',
+#             '85% N Red.'
 #             ]
+
+title_exp = ['50% N Red.',
+             '50% N Red.\n50% Recy.',
+             '50% N Red.\n90% Recy.',
+             '85% N Red.',
+             '85% N Red.\n50% Recy.',
+             '85% N Red.\n90% Recy.'
+             ]
 
 # mask
 mask_nc = l2grid.mask_nc
@@ -297,7 +300,7 @@ for y_i1 in range(len(yearlist1)):
 avganth2 = np.ones((len(yearlist2)))*np.nan
 avgp2 = np.ones((len(exp2),len(yearlist2)))*np.nan
 stdanth2 = np.ones((len(yearlist2)))*np.nan
-stdp2 = np.ones((len(exp2),len(yearlist2)))*np.nan
+stdp2 = np.ones((len(exp2)+2,len(yearlist2)))*np.nan
 for y_i2 in range(len(yearlist2)):
     for e_i2 in range(len(exp2)):
         if region_name == 'coast':
@@ -384,31 +387,31 @@ for y_i2 in range(len(yearlist2)):
 #avganth = np.ones((len(title_exp)))*np.nan
 #stdanth = np.ones((len(title_exp)))*np.nan
 
-avgnum1_temp = np.nanmean(avgp1,axis=1)
-avgnum2_temp = np.nanmean(avgp2,axis=1)
-stdnum1_temp =  np.nanstd(avgp1,axis=1)
-stdnum2_temp =  np.nanstd(avgp2,axis=1)
+# concatenate all years
+avgnum_concat = np.concatenate((avgp1,avgp2),axis=1)
+avgnum_val = np.nanmean(avgnum_concat,axis=1)
+stdnum_val = np.nanstd(avgnum_concat,axis=1)
 
-avganthnum_temp1 = np.nanmean((avganth1))
-avganthnum_temp2 = np.nanmean((avganth2))
-stdanthnum_temp1 =  np.nanstd((avganth1))
-stdanthnum_temp2 =  np.nanstd((avganth2))
+avganth_concat = np.concatenate((avganth1,avganth2))
+avganth_val = np.nanmean(avganth_concat)
+stdanth_val = np.nanstd(avganth_concat)
+anth98 = avganth_concat[0]
+anth99 = avganth_concat[1]
+anth16 = avganth_concat[2]
+anth17 = avganth_concat[3]
 
-avgnum1 = ((avgnum1_temp-avganthnum_temp1)/avganthnum_temp1)*100
-avgnum2 = ((avgnum2_temp-avganthnum_temp2)/avganthnum_temp2)*100
-#stdnum1 = (stdnum_temp1/avgnum1_temp)*100
-#stdnum2 = (stdnum_temp2/avgnum2_temp)*100
-stdnum1 = (stdnum1_temp/avganthnum_temp1)*100
-stdnum2 = (stdnum2_temp/avganthnum_temp2)*100
+vnman98 = np.array([anth98,avgp1[0,0],avgp1[3,0]])
+vnman99 = np.array([anth99,avgp1[0,1],avgp1[3,1]])
+vnman16 = np.array([anth16,avgp2[0,0],avgp2[3,0]])
+vnman17 = np.array([anth17,avgp2[0,1],avgp2[3,1]])
 
-#avganthnum1 = np.nanmean((avganth1))
-#avganthnum2 = np.nanmean((avganth2))
-#stdanthnum1 = np.nanstd((stdanth1))
-#stdanthnum2 = np.nanstd((stdanth2))
+lnman98 = ((vnman98-anth98)/anth98)*100
+lnman99 = ((vnman99-anth99)/anth99)*100
+lnman16 = ((vnman16-anth16)/anth16)*100
+lnman17 = ((vnman17-anth17)/anth17)*100
 
-
-figw = 16
-#figw = 12
+#figw = 16
+figw = 12
 figh = 4
 
 axsize = 14
@@ -416,12 +419,17 @@ axsize = 14
 ind1 = list(range(0,6))
 ind2 = list(range(6,len(title_exp)))
 
-fig,ax = plt.subplots(1,1,figsize=[figw,figh])
-ax.bar(np.arange(len(title_exp))[ind1],avgnum1,yerr=stdnum1,color='white',edgecolor='k',capsize=4)
-ax.bar(np.arange(len(title_exp))[ind2],avgnum2,yerr=stdnum2,color='gray',capsize=4)
+nman_name = ['No N Red.','50% N Red.','85% N Red.']
 
-ax.plot(np.arange(len(title_exp)),np.zeros((len(title_exp))))
-ax.plot(np.arange(len(title_exp)),np.ones((len(title_exp)))*-100,color='k',linestyle='--')
+fig,ax = plt.subplots(1,1,figsize=[figw,figh])
+
+ax.plot(nman_name,lnman98,label='1998',lw=2)
+ax.plot(nman_name,lnman99,label='1999',lw=2)
+ax.plot(nman_name,lnman16,label='2016',lw=2)
+ax.plot(nman_name,lnman17,label='2017',lw=2)
+
+ax.plot(np.arange(len(nman_name)),np.zeros((len(nman_name))),color='k',linestyle='--')
+ax.plot(np.arange(len(nman_name)),np.ones((len(nman_name)))*-100,color='k',linestyle='--')
 
 #if region_name == 'coast':
 #    ax.set_ylim(bottom=-0.5,top=14)
@@ -430,22 +438,16 @@ ax.plot(np.arange(len(title_exp)),np.ones((len(title_exp)))*-100,color='k',lines
 #if region_name == 'offshore':
 #    ax.set_ylim(bottom=-1.5,top=3.5)
 
-ax.set_ylim(bottom=-135,top=75)
+ax.legend(loc='best',fontsize='large')
+ax.set_ylim(bottom=-100,top=75)
 ax.yaxis.set_ticks(np.arange(-125,75,25))
 
-#ax.plot(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*avganthnum1)
-#ax.fill_between(np.arange(len(title_exp))[ind1],np.ones((len(title_exp)))[ind1]*(avganthnum1+stdanthnum1),np.ones((len(title_exp)))[ind1]*(avganthnum1-stdanthnum1),alpha=0.3)
-#
-#ax.plot(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*avganthnum2)
-#ax.fill_between(np.arange(len(title_exp))[ind2],np.ones((len(title_exp)))[ind2]*(avganthnum2+stdanthnum2),np.ones((len(title_exp)))[ind2]*(avganthnum2-stdanthnum2),alpha=0.3)
-
-ax.set_xticks(range(len(title_exp)))
-ax.set_xticklabels(title_exp,fontsize=axsize)
+ax.set_xticklabels(nman_name,fontsize=axsize)
 ax.set_ylabel('% Change Algal Production',fontsize=axsize)
 ax.set_title(regtitle,fontsize=axsize)
 ax.tick_params(axis='both',which='major',right=True,labelsize=axsize)
 
-savename = var_name+'_avg_4years_yearly_perc'+region_name+'_'+ctimep+'_'+gtimep+'_rearrange.png'
+savename = 'line_'+var_name+'_avg_n4_peryear_perc'+region_name+'_'+ctimep+'_'+gtimep+'_rearrange.png'
 
 fig.savefig(savepath+savename,bbox_inches='tight')
 print(savename)

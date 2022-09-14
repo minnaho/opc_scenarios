@@ -50,25 +50,25 @@ exp2 = ['PNDN_only_realistic',
        'pndn90_realistic',
        'FNDN_only_realistic']
 
-title_exp = ['50% N Red.',
-             '50% N Red.\n50% Recy.',
-             '50% N Red.\n90% Recy.',
-             '85% N Red.',
-             '85% N Red.\n50% Recy.',
-             '85% N Red.\n90% Recy.',
-             '50% N Red.',
-             '50% N Red.\n50% Recy.',
-             '50% N Red.\n90% Recy.',
-             '85% N Red.'
-             ]
-
 #title_exp = ['50% N Red.',
 #             '50% N Red.\n50% Recy.',
 #             '50% N Red.\n90% Recy.',
 #             '85% N Red.',
 #             '85% N Red.\n50% Recy.',
-#             '85% N Red.\n90% Recy.'
+#             '85% N Red.\n90% Recy.',
+#             '50% N Red.',
+#             '50% N Red.\n50% Recy.',
+#             '50% N Red.\n90% Recy.',
+#             '85% N Red.'
 #             ]
+
+title_exp = ['50% N Red.',
+             '50% N Red.\n50% Recy.',
+             '50% N Red.\n90% Recy.',
+             '85% N Red.',
+             '85% N Red.\n50% Recy.',
+             '85% N Red.\n90% Recy.'
+             ]
 
 # mask
 mask_nc = l2grid.mask_nc
@@ -407,8 +407,8 @@ stdnum2 = (stdnum2_temp/avganthnum_temp2)*100
 #stdanthnum2 = np.nanstd((stdanth2))
 
 
-figw = 16
-#figw = 12
+#figw = 16
+figw = 12
 figh = 4
 
 axsize = 14
@@ -418,7 +418,7 @@ ind2 = list(range(6,len(title_exp)))
 
 fig,ax = plt.subplots(1,1,figsize=[figw,figh])
 ax.bar(np.arange(len(title_exp))[ind1],avgnum1,yerr=stdnum1,color='white',edgecolor='k',capsize=4)
-ax.bar(np.arange(len(title_exp))[ind2],avgnum2,yerr=stdnum2,color='gray',capsize=4)
+#ax.bar(np.arange(len(title_exp))[ind2],avgnum2,yerr=stdnum2,color='gray',capsize=4)
 
 ax.plot(np.arange(len(title_exp)),np.zeros((len(title_exp))))
 ax.plot(np.arange(len(title_exp)),np.ones((len(title_exp)))*-100,color='k',linestyle='--')
@@ -445,7 +445,7 @@ ax.set_ylabel('% Change Algal Production',fontsize=axsize)
 ax.set_title(regtitle,fontsize=axsize)
 ax.tick_params(axis='both',which='major',right=True,labelsize=axsize)
 
-savename = var_name+'_avg_4years_yearly_perc'+region_name+'_'+ctimep+'_'+gtimep+'_rearrange.png'
+savename = var_name+'_avg_4years_yearly_perc'+region_name+'_'+ctimep+'_'+gtimep+'_rearrange_9899_only.png'
 
 fig.savefig(savepath+savename,bbox_inches='tight')
 print(savename)
