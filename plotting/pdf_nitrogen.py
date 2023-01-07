@@ -15,23 +15,23 @@ region_name = 'coast'
 dst = 1
 den = 100
 
-varnc1 = 'rho'
-varstr1 = 'rho'
+varnc1 = 'NO3'
+varstr1 = 'NO3'
 
-varnc2 = 'salt'
-varstr2 = 'salt'
+varnc2 = 'NH4'
+varstr2 = 'NH4'
 
 # choose years
-start_year = 1999
-end_year = 1999
+start_year = 2015
+end_year = 2017
 
 # choose months between 1 and 12
-start_month = 6
-end_month = 9
+start_month = 12
+end_month = 10
 
 #exp = ['cntrl','l1617','PNDN_only','pndn50','pndn90','FNDN_only','fndn50','fndn90']
 #title_exp = ['CTRL','Loads 16-17','PNDN only','PNDN 50','PNDN 90','FNDN only','FNDN 50','FNDN 90']
-exp = 'cntrl_initap'
+#exp = 'cntrl_initap'
 #exp = 'loads1617'
 #exp = 'PNDN_only'
 #exp = 'pndn50'
@@ -39,6 +39,8 @@ exp = 'cntrl_initap'
 #exp = 'FNDN_only'
 #exp = 'fndn50'
 #exp = 'fndn90'
+
+exp = 'cntrl_initap_realistic'
 #exp = 'PNDN_only_realistic'
 #exp = 'FNDN_only_realistic'
 #exp = 'pndn50_realistic'
@@ -148,13 +150,13 @@ for y_i in range(start_year,end_year+1):
         s_m = start_month
     else:
         s_m = 1
-    # if we are on the last year, end at e_m
-    #if y_i == end_year:
-    #    e_m = end_month+1
-    #else:
-    #    e_m = 13
-    #for m_i in [s_m,e_m]:
-    for m_i in [3,6,9]:
+    #if we are on the last year, end at e_m
+    if y_i == end_year:
+        e_m = end_month+1
+    else:
+        e_m = 13
+    for m_i in range(s_m,e_m):
+    #for m_i in [3,6,9]:
         # loop through each file type
         if m_i in months_w_31_days:
             ndays = 31
