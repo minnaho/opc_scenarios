@@ -4,6 +4,7 @@
 # 7 OPC scenarios
 # 1 CTRL scenario
 # conda activate cartopy_update 
+# Nutrient Management only!!
 ################################################
 import sys
 import os
@@ -24,9 +25,10 @@ import cartopy.feature as cpf
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import h5py
 
+
 #plt.ion()
 
-timep = 'fullts'
+timep = 'spring'
 # contour % line
 clinemin = -5
 clinemax = 5
@@ -60,7 +62,7 @@ title_exp = ['CTRL',
 # roms var
 var_nc = 'var_int'
 varstr = 'npp'
-cblabel = '$\Delta$ NPP mmol m$^{-2}$'
+cblabel = varstr+' mmol m$^{-2}$ change'
 
 s2d = 86400
 
@@ -71,9 +73,9 @@ s2d = 86400
 #c_map = cmocean.cm.deep
 #c_map = cmocean.cm.delta
 #c_map = 'PRGn'
-c_map = cmocean.cm.balance
+#c_map = cmocean.cm.balance
 #c_map1 = cmocean.cm.algae
-#c_map = 'PRGn'
+c_map = 'PRGn'
 
 # grid path
 grid_nc = l2grid.grid_nc
@@ -223,6 +225,7 @@ v_max = 10
 v_min = -10
 
 
+fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
 npp_pos_mask = np.ones((len(exp)-2,mask_nc.shape[0],mask_nc.shape[1]))*np.nan
 npp_neg_mask = np.ones((len(exp)-2,mask_nc.shape[0],mask_nc.shape[1]))*np.nan
@@ -259,116 +262,7 @@ neg_area_onshore = np.ones((len(exp)-2))*np.nan
 pos_area_offshore =np.ones((len(exp)-2))*np.nan
 neg_area_offshore =np.ones((len(exp)-2))*np.nan
 
-# plot anth-cntrl, nutrient management-cntrl
-fig,ax = plt.subplots(1,3,figsize=[figw-2,4.1],sharey=True,subplot_kw=dict(projection=ccrs.PlateCarree()))
-ax_i = 0
-
-for e_i in [1,2,5]:
-    print('maps',title_exp[e_i])
-    # convert s^-1 to d^-1
-    datanc = np.squeeze(Dataset(ncfiles[e_i],'r')[var_nc])*s2d
-    datanc[datanc>1E10] = np.nan
-    datanc[datanc<=0] = np.nan
-    # time average
-    # full 2 years
-    if timep == 'fullts':
-        dataavg = np.nanmean(datanc,axis=0)
-    # spring
-    if timep == 'spring':
-        dataavg = np.nanmean((np.concatenate((datanc[5:8],datanc[17:20]))),axis=0)
-    # summer
-    if timep == 'summer':
-        dataavg = np.nanmean((np.concatenate((datanc[8:11],datanc[20:23]))),axis=0)
-    # winter
-    if timep == 'winter':
-        dataavg = np.nanmean((np.concatenate((datanc[2:5],datanc[14:17]))),axis=0)
-
-    data_onshore = np.nanmean(dataavg*mask_onshore)
-    data_offshore = np.nanmean(dataavg*mask_offshore)
-
-    varplt = dataavg - cntrlavg
-
-    # calculate area of change > 5 and < -5 mmol m-2 d-1
-    # in km2
-    #npp_pos = np.where(varplt>=clinemax2)
-    #npp_neg = np.where(varplt<=clinemin2)
-    #pos_area = np.nansum(sizex[npp_pos[0],npp_pos[1]]*sizey[npp_pos[0],npp_pos[1]])
-    #neg_area = np.nansum(sizex[npp_neg[0],npp_neg[1]]*sizey[npp_neg[0],npp_neg[1]])
-    #print('area >'+str(clinemax2)+' change NPP: '+str(int(pos_area))+' km^2')
-    #print('area <'+str(clinemin2)+' change NPP: '+str(int(neg_area))+' km^2')
-    #pos_area_var[e_i-2] = pos_area
-    #neg_area_var[e_i-2] = neg_area
-    #npp_pos_mask[e_i-2,npp_pos[0],npp_pos[1]] = 1
-    #npp_neg_mask[e_i-2,npp_neg[0],npp_neg[1]] = 1
-
-    #npp_pos_onshore = np.where(varplt*mask_onshore>=clinemax2)
-    #npp_neg_onshore = np.where(varplt*mask_onshore<=clinemin2)
-    #npp_pos_offshore = np.where(varplt*mask_offshore>=clinemax2)
-    #npp_neg_offshore = np.where(varplt*mask_offshore<=clinemin2)
-
-    # area onshore/offshore >/< clinemax/clinemin
-    #pos_area_onshore[e_i-2] = np.nansum(sizex[npp_pos_onshore[0],npp_pos_onshore[1]]*sizey[npp_pos_onshore[0],npp_pos_onshore[1]])
-    #neg_area_onshore[e_i-2] = np.nansum(sizex[npp_neg_onshore[0],npp_neg_onshore[1]]*sizey[npp_neg_onshore[0],npp_neg_onshore[1]])
-    #pos_area_offshore[e_i-2] = np.nansum(sizex[npp_pos_offshore[0],npp_pos_offshore[1]]*sizey[npp_pos_offshore[0],npp_pos_offshore[1]])
-    #neg_area_offshore[e_i-2] = np.nansum(sizex[npp_neg_offshore[0],npp_neg_offshore[1]]*sizey[npp_neg_offshore[0],npp_neg_offshore[1]])
-
-    ## get anth values of where scenario > anth and scenario < anth
-    #anth_onshore_pos = np.nanmean((anthavg*mask_onshore)[npp_pos]) 
-    #anth_onshore_neg = np.nanmean((anthavg*mask_onshore)[npp_neg]) 
-    #anth_offshore_pos = np.nanmean((anthavg*mask_offshore)[npp_pos]) 
-    #anth_offshore_neg = np.nanmean((anthavg*mask_offshore)[npp_neg]) 
-
-    # calculate mean of onshore vs offshore where scenario > anth
-    # and scenario < anth
-    #onshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_onshore)[npp_pos]) - anth_onshore_pos
-    #onshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_onshore)[npp_neg]) - anth_onshore_neg
-    #offshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_pos]) - anth_offshore_pos
-    #offshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_neg]) - anth_offshore_neg
-    
-    # plot maps
-    p_plot = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=-15,vcenter=0,vmax=15))
-    c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varplt,[clinemax2],transform=ccrs.PlateCarree(),colors='red',linestyles='solid')
-
-    ax.flat[ax_i].set_title(title_exp[e_i],fontsize=axfont)
-    ax_i += 1
-
-for a_i in range(len(ax.flat)):
-    # mark pipe location
-    #for l_i in range(len(lon_potw)):
-    #    ax.flat[a_i].scatter(lon_potw[l_i],lat_potw[l_i],marker='o',facecolors='none',edgecolors='blue',s=100)
-    # other grid stuff
-    ax.flat[a_i].add_feature(coast_10m,facecolor='None',edgecolor='k')
-    ax.flat[a_i].add_feature(cpf.BORDERS,facecolor='None',edgecolor='k')
-    ax.flat[a_i].set_extent(extent)
-    gl = ax.flat[a_i].gridlines(draw_labels={'bottom':'x','left':'y'},xlabel_style=dict(size=axfont),ylabel_style=dict(size=axfont))
-    if a_i >= 1:
-        gl.left_labels=False
-
-# colorbar
-p0 = ax.flat[2].get_position().get_points().flatten()
-p1 = ax.flat[2].get_position().get_points().flatten()
-cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
-
-cb = fig.colorbar(p_plot,cax=cb_ax,orientation='vertical',ticks=mticker.MultipleLocator(5))
-cb.set_label(cblabel,fontsize=axfont)
-cb.ax.tick_params(axis='both',which='major',labelsize=axfont)
-fig.suptitle('Scenario - CTRL',fontsize=axfont,y=0.98)
-
-
-#savename = 'map_2years_100m_int_'+varstr+'_'+region_name+'_'+exp[-1]+'_abs_fullts.png'
-savename = 'map_2years-NM_100m_int_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
-
-fig.savefig(savepath+savename,bbox_inches='tight')
-print(savename)
-
 # only plot scenarios (skip cntrl and anth)
-fig,ax = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
-
-# save arrays of sce-anth
-sce_anth = np.ones((len(exp)-2,mask_nc.shape[0],mask_nc.shape[1]))*np.nan
-sce_anth_2016 = np.ones((len(exp)-2))*np.nan
-sce_anth_2017 = np.ones((len(exp)-2))*np.nan
-
 for e_i in range(2,len(exp)):
     print('maps',title_exp[e_i])
     # convert s^-1 to d^-1
@@ -403,12 +297,8 @@ for e_i in range(2,len(exp)):
     #onshore_std[e_i-2] = np.nanstd([data_onavg1-anth_onavg1,data_onavg2-anth_onavg2])
     #offshore_std[e_i-2] = np.nanstd([data_offavg1-anth_offavg1,data_offavg2-anth_offavg2])
 
+
     varplt = dataavg - anthavg
-
-    sce_anth[e_i-2] = varplt
-    sce_anth_2016[e_i-2] = np.nanmean(datanc[:12])
-    sce_anth_2017[e_i-2] = np.nanmean(datanc[12:])
-
     onshore_var[e_i-2] = data_onshore - anth_onshore
     offshore_var[e_i-2] = data_offshore - anth_offshore
 
@@ -465,17 +355,18 @@ for e_i in range(2,len(exp)):
     offshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_pos]) - anth_offshore_pos
     offshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_neg]) - anth_offshore_neg
     
+
+    # alongshore profile
+    alongshore_var[e_i-2] = np.nanmean(((dataavg*mask_onshore)-(anthavg*mask_onshore)),axis=0)
+
     p_plot = ax.flat[e_i-2].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=v_min,vcenter=0,vmax=v_max))
     c_plot = ax.flat[e_i-2].contour(lon_nc,lat_nc,varplt,[clinemax],transform=ccrs.PlateCarree(),colors='red',linestyles='dashed')
     c_plot = ax.flat[e_i-2].contour(lon_nc,lat_nc,varplt,[clinemax2],transform=ccrs.PlateCarree(),colors='red',linestyles='solid')
     c_plot = ax.flat[e_i-2].contour(lon_nc,lat_nc,varplt,[clinemin],transform=ccrs.PlateCarree(),colors='blue',linestyles='dashed')
     c_plot = ax.flat[e_i-2].contour(lon_nc,lat_nc,varplt,[clinemin2],transform=ccrs.PlateCarree(),colors='blue',linestyles='solid')
 
+    
     ax.flat[e_i-2].set_title(title_exp[e_i],fontsize=axfont)
-
-    # alongshore profile
-    alongshore_var[e_i-2] = np.nanmean(((dataavg*mask_onshore)-(anthavg*mask_onshore)),axis=0)
-
 
 for a_i in range(len(ax.flat)):
     # mark pipe location
@@ -599,22 +490,26 @@ fig.savefig(savepath+'bar_'+varstr+'_area_'+timep+'.png',bbox_inches='tight')
 ##############################################
 # area of onshore/offshore var >/< clinemax/clinemin 
 ##############################################
-fig,ax = plt.subplots(2,1,figsize=[12,8],sharex=True)
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_onshore,label='Onshore')
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_offshore,bottom=pos_area_onshore,label='Offshore')
-ax.flat[1].bar(title_exp[2:],neg_area_onshore)
-ax.flat[1].bar(title_exp[2:],neg_area_offshore,bottom=neg_area_onshore)
+fig,ax = plt.subplots(4,1,figsize=[12,8])
+ax.flat[0].bar(range(len(title_exp[2:])),pos_area_onshore)
+ax.flat[1].bar(range(len(title_exp[2:])),neg_area_onshore)
+ax.flat[2].bar(title_exp[2:],pos_area_offshore)
+ax.flat[3].bar(title_exp[2:],neg_area_offshore)
+ax.flat[0].set_xticks([])
+ax.flat[1].set_xticks([])
+ax.flat[2].set_xticks([])
 fig.suptitle('Scenario - ANTH',fontsize=axfont)
-ax.flat[0].set_title('Area of Increased NPP >'+str(clinemax2)+' mmol m$^{-2}$',fontsize=axfont)
-ax.flat[1].set_title('Area of Decreased NPP <'+str(clinemin2)+' mmol m$^{-2}$',fontsize=axfont)
+ax.flat[0].set_title('Onshore Positive',fontsize=axfont)
+ax.flat[1].set_title('Onshore Negative',fontsize=axfont)
+ax.flat[2].set_title('Offshore Positive',fontsize=axfont)
+ax.flat[3].set_title('Offshore Negative',fontsize=axfont)
 ax.flat[0].tick_params(axis='both',which='major',labelsize=axfont)
 ax.flat[1].tick_params(axis='both',which='major',labelsize=axfont)
-ax.flat[0].legend(loc='best',fontsize=axfont)
+ax.flat[2].tick_params(axis='both',which='major',labelsize=axfont)
+ax.flat[3].tick_params(axis='both',which='major',labelsize=axfont)
 fig.supylabel('Area in km$^2$',fontsize=axfont)
 fig.tight_layout()
 fig.savefig(savepath+'bar_area_pos_neg_'+varstr+'_onshore_offshore_'+timep+'.png',bbox_inches='tight')
-
-
 
 ####################
 # alongshore profile
@@ -625,7 +520,6 @@ for a_i in range(len(alongshore_var)):
     ax.plot(alongshore_var[a_i][:-30],range(len(alongshore_var[a_i][:-30])))
 
 
-'''
 ###########################
 # mass balance on npp pos and neg masks
 ###########################
@@ -751,4 +645,3 @@ for e_i in range(2,len(exp)):
     
     print('phys sum pos: '+str(phys_sum_pos))
     print('phys sum neg: '+str(phys_sum_neg))
-'''

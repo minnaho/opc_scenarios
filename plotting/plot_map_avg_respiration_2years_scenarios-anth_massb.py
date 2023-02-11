@@ -25,8 +25,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import pandas as pd
 import h5py
 
-
-plt.ion()
+#plt.ion()
 
 timep = 'fullts'
 # contour % line
@@ -35,25 +34,29 @@ clinemax = 5
 clinemin2 = -10
 clinemax2 = 10
 
-# avg maps
-outpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/newmb/budget_ww/'
-filename = 'concat_fullts_int_avg_100m_50m_'
-
 savepath = './figs/2years/'
 
-#exp = ['PNDN_only','pndn50','pndn90']
-#title_exp = ['PNDN only','PNDN 50','PNDN 90']
-#exp = ['l1617','FNDN_only','fndn50','fndn90']
-#title_exp = ['Loads 16-17','FNDN only','FNDN 50','FNDN 90']
-#exp = ['l1617']
-#title_exp = ['Loads 16-17']
-#exp = ['cntrl_initap_realistic','fulll_2012_2017','PNDN_only_realistic','pndn50_fixriver','pndn90_fixriver','FNDN_only_realistic','fndn50_fixriver','fndn90_fixriver']
-exp = ['cntrl_initap_realistic','fulll_2012_2017','PNDN_only_realistic','pndn50_realistic','pndn90_realistic','FNDN_only_realistic','fndn50_realistic','fndn90_realistic']
-title_exp = ['CTRL','ANTH','50% N Red.','50% N Red.\n50% Recy.','50% N Red.\n90% Recy.','85% N Red.','85% N Red.\n50% Recy.','85% N Red.\n90% Recy.']
+exp = ['cntrl_initap_realistic',
+       'fulll_2012_2017',
+       'PNDN_only_realistic',
+       'pndn50_fixriver',
+       'pndn90_fixriver',
+       'FNDN_only_realistic',
+       'fndn50_fixriver',
+       'fndn90_fixriver']
+
+title_exp = ['CTRL',
+             'ANTH',
+             '50% N Red.',
+             '50% N Red.\n50% Recy.',
+             '50% N Red.\n90% Recy.',
+             '85% N Red.',
+             '85% N Red.\n50% Recy.',
+             '85% N Red.\n90% Recy.']
 
 # roms var
 varstr = 'respiration'
-cblabel = varstr+' mmol m$^{-2}$ change'
+cblabel = '$\Delta$ '+varstr+' mmol m$^{-2}$'
 
 s2d = 86400
 
@@ -64,9 +67,9 @@ s2d = 86400
 #c_map = cmocean.cm.deep
 #c_map = cmocean.cm.delta
 #c_map = 'PRGn'
-#c_map = cmocean.cm.balance
+c_map = cmocean.cm.balance
 #c_map1 = cmocean.cm.algae
-c_map = 'PRGn'
+#c_map = 'PRGn'
 
 # grid path
 grid_nc = l2grid.grid_nc
@@ -147,8 +150,8 @@ lon_potw = np.array(major_nc.variables['longitude'])
 coast_10m = cpf.NaturalEarthFeature('physical','coastline','10m')
 
 # max and min of color bar
-v_max = 20
-v_min = -20
+v_max = 10
+v_min = -10
 
 ###########################
 # mass balance
@@ -172,14 +175,13 @@ datap = matrp.get(matp)
 datemat = np.squeeze(h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matc+'.mat','r').get(matc)['date'])
 dt = pd.to_datetime(datemat-719529, unit='D')
 
-# get bgc variables O22
+# get bgc variables O2
 loss = np.squeeze(datan['LOSS'])
 graze = np.squeeze(datan['GRAZE'])
 remin = np.squeeze(datan['REMIN'])
 sedre = np.squeeze(datan['SED_REMIN'])
 ammox = np.squeeze(datan['AMMOX'])
 nit = np.squeeze(datan['NIT'])
-
 
 # get phys variables
 adx = np.squeeze(datap['ADX'])
@@ -188,6 +190,8 @@ adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
 
 # calculate respiration
 respir_calc = loss+graze+remin+sedre+ammox+nit
+print('anth 2016',str(np.nanmean(respir_calc[:12])*s2d))
+print('anth 2017',str(np.nanmean(respir_calc[12:])*s2d))
 
 # calculate phys terms
 phys_tot = adx+ady+adz
@@ -209,12 +213,66 @@ if timep == 'winter':
     bgc_tot_anth = np.nanmean((np.concatenate((respir_calc[2:5],respir_calc[14:17]))),axis=0)
     phys_tot_anth = np.nanmean((np.concatenate((phys_tot[2:5],phys_tot[14:17]))),axis=0)
 
+# cntrl
+matrn = h5py.File(massbpath+fst+'cntrl_initap_realistic'+dep+'/'+matn+'.mat','r') 
+matrp = h5py.File(massbpath+fst+'cntrl_initap_realistic'+dep+'/'+matp+'.mat','r') 
+datan = matrn.get(matn)
+datap = matrp.get(matp)
+
+# get dates
+datemat = np.squeeze(h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matc+'.mat','r').get(matc)['date'])
+dt = pd.to_datetime(datemat-719529, unit='D')
+
+# get bgc variables O2
+loss = np.squeeze(datan['LOSS'])
+graze = np.squeeze(datan['GRAZE'])
+remin = np.squeeze(datan['REMIN'])
+sedre = np.squeeze(datan['SED_REMIN'])
+ammox = np.squeeze(datan['AMMOX'])
+nit = np.squeeze(datan['NIT'])
+
+# get phys variables
+adx = np.squeeze(datap['ADX'])
+ady = np.squeeze(datap['ADY'])
+adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
+
+# calculate respiration
+respir_calc = loss+graze+remin+sedre+ammox+nit
+print('cntrl 2016',str(np.nanmean(respir_calc[:12])*s2d))
+print('cntrl 2017',str(np.nanmean(respir_calc[12:])*s2d))
+
+# calculate phys terms
+phys_tot = adx+ady+adz
+
+# fullts
+if timep == 'fullts':
+    bgc_tot_cntrl = np.nanmean(respir_calc,axis=0)
+    phys_tot_cntrl = np.nanmean(phys_tot,axis=0)
+# spring
+if timep == 'spring':
+    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[5:8],respir_calc[17:20]))),axis=0)
+    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[5:8],phys_tot[17:20]))),axis=0)
+# summer
+if timep == 'summer':
+    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[8:11],respir_calc[20:23]))),axis=0)
+    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[8:11],phys_tot[20:23]))),axis=0)
+# winter
+if timep == 'winter':
+    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[2:5],respir_calc[14:17]))),axis=0)
+    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[2:5],phys_tot[14:17]))),axis=0)
+
 npp_pos_mask = np.ones((len(exp)-2,mask_nc.shape[0],mask_nc.shape[1]))*np.nan
 npp_neg_mask = np.ones((len(exp)-2,mask_nc.shape[0],mask_nc.shape[1]))*np.nan
 
 # average of onshore vs offshore value
 onshore_var = np.ones((len(exp)-2))*np.nan
 offshore_var = np.ones((len(exp)-2))*np.nan
+
+# 25th/75th percentile or 10/90 or 5/95
+onshore_std_lower = np.ones((len(exp)-2))*np.nan
+offshore_std_lower = np.ones((len(exp)-2))*np.nan
+onshore_std_upper = np.ones((len(exp)-2))*np.nan
+offshore_std_upper = np.ones((len(exp)-2))*np.nan
 
 # average of onshore vs offshore positive and negative values 
 onshore_var_pos = np.ones((len(exp)-2))*np.nan
@@ -230,6 +288,89 @@ alongshore_var = np.ones((len(exp)-2,mask_nc.shape[1]))
 pos_area_var = np.ones((len(exp)-2))*np.nan
 neg_area_var = np.ones((len(exp)-2))*np.nan
 
+# area in km^2 onshore/offshore and positive/negative
+pos_area_onshore = np.ones((len(exp)-2))*np.nan
+neg_area_onshore = np.ones((len(exp)-2))*np.nan
+pos_area_offshore =np.ones((len(exp)-2))*np.nan
+neg_area_offshore =np.ones((len(exp)-2))*np.nan
+
+# plot anth-cntrl, NM-cntrl
+fig,ax = plt.subplots(1,3,figsize=[figw-2,4.1],sharey=True,subplot_kw=dict(projection=ccrs.PlateCarree()))
+ax_i = 0
+for e_i in [1,2,5]:
+    # read data
+    if e_i == 1:
+        matrn = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matn+'.mat','r')
+        matrp = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matp+'.mat','r')
+    else:
+        matrn = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matn+'.mat','r')
+        matrp = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matp+'.mat','r')
+        datemat = np.squeeze(h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
+
+    datan = matrn.get(matn)
+    datap = matrp.get(matp)
+
+    # get dates
+
+    # get bgc variables N
+    loss = np.squeeze(datan['LOSS'])
+    graze = np.squeeze(datan['GRAZE'])
+    remin = np.squeeze(datan['REMIN'])
+    sedre = np.squeeze(datan['SED_REMIN'])
+    ammox = np.squeeze(datan['AMMOX'])
+    nit = np.squeeze(datan['NIT'])
+    # calculate bgc terms
+    respir_calc = loss+graze+remin+sedre+ammox+nit
+
+    bgc_tot_calc = respir_calc
+
+    if timep == 'fullts':
+        bgc_tot_sce = np.nanmean(respir_calc,axis=0)
+        phys_tot_sce = np.nanmean(phys_tot,axis=0)
+
+    bgc_tot_diff = (bgc_tot_sce - bgc_tot_cntrl)*s2d
+
+    print('maps',title_exp[e_i])
+    varpltbgc = bgc_tot_diff
+
+    p_plot1 = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=-15,vcenter=0,vmax=15))
+    #p_plot1 = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vcenter=0))
+    #c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varpltbgc,[clinemax],transform=ccrs.PlateCarree(),colors='red',linestyles='dashed')
+    c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varpltbgc,[clinemax2],transform=ccrs.PlateCarree(),colors='red',linestyles='solid')
+    #c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varpltbgc,[clinemin],transform=ccrs.PlateCarree(),colors='blue',linestyles='dashed')
+    c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varpltbgc,[clinemin2],transform=ccrs.PlateCarree(),colors='blue',linestyles='solid')
+
+    ax.flat[ax_i].set_title(title_exp[e_i],fontsize=axfont)
+    ax_i += 1
+
+for a_i in range(len(ax.flat)):
+    # mark pipe location
+    #for l_i in range(len(lon_potw)):
+    #    ax.flat[a_i].scatter(lon_potw[l_i],lat_potw[l_i],marker='o',facecolors='none',edgecolors='blue',s=100)
+    # other grid stuff
+    ax.flat[a_i].add_feature(coast_10m,facecolor='None',edgecolor='k')
+    ax.flat[a_i].add_feature(cpf.BORDERS,facecolor='None',edgecolor='k')
+    ax.flat[a_i].set_extent(extent)
+    gl = ax.flat[a_i].gridlines(draw_labels={'bottom':'x','left':'y'},xlabel_style=dict(size=axfont),ylabel_style=dict(size=axfont))
+    if a_i >= 1:
+        gl.left_labels=False
+
+
+# colorbar
+p0 = ax.flat[2].get_position().get_points().flatten()
+p1 = ax.flat[2].get_position().get_points().flatten()
+cb_ax = fig.add_axes([p0[2]+.015,p1[1],.01,p0[3]-p1[1]])
+
+cb1 = fig.colorbar(p_plot1,cax=cb_ax,orientation='vertical',ticks=mticker.MultipleLocator(5))
+cb1.set_label(cblabel,fontsize=axfont)
+cb1.ax.tick_params(axis='both',which='major',labelsize=axfont)
+
+savename1 = 'map_2years-anth_100m_bgc_NM_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
+
+fig.savefig(savepath+savename1,bbox_inches='tight')
+
+# plot each scenario-anth
+
 fig1,ax1 = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 fig2,ax2 = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 
@@ -239,10 +380,8 @@ for e_i in range(2,len(exp)):
     matrp = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matp+'.mat','r') 
     datan = matrn.get(matn)
     datap = matrp.get(matp)
-    
     # get dates
     datemat = np.squeeze(h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
-    
     # get bgc variables N
     loss = np.squeeze(datan['LOSS'])
     graze = np.squeeze(datan['GRAZE'])
@@ -250,14 +389,14 @@ for e_i in range(2,len(exp)):
     sedre = np.squeeze(datan['SED_REMIN'])
     ammox = np.squeeze(datan['AMMOX'])
     nit = np.squeeze(datan['NIT'])
-
     # get phys variables
     adx = np.squeeze(datap['ADX'])
     ady = np.squeeze(datap['ADY'])
     adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
-    
     # calculate bgc terms
     respir_calc = loss+graze+remin+sedre+ammox+nit
+    print(exp[e_i],'2016',str(np.nanmean(respir_calc[:12])*s2d))
+    print(exp[e_i],'2017',str(np.nanmean(respir_calc[12:])*s2d))
  
     bgc_tot_calc = respir_calc
     
@@ -341,10 +480,10 @@ for e_i in range(2,len(exp)):
 
     p_plot1 = ax1.flat[e_i-2].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=v_min,vcenter=0,vmax=v_max))
     #p_plot1 = ax1.flat[e_i-2].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vcenter=0))
-    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemax],transform=ccrs.PlateCarree(),colors='lightgreen')
-    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemax2],transform=ccrs.PlateCarree(),colors='darkgreen')
-    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemin],transform=ccrs.PlateCarree(),colors='mediumpurple')
-    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemin2],transform=ccrs.PlateCarree(),colors='purple')
+    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemax],transform=ccrs.PlateCarree(),colors='red',linestyles='dashed')
+    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemax2],transform=ccrs.PlateCarree(),colors='red',linestyles='solid')
+    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemin],transform=ccrs.PlateCarree(),colors='blue',linestyles='dashed')
+    c_plot = ax1.flat[e_i-2].contour(lon_nc,lat_nc,varpltbgc,[clinemin2],transform=ccrs.PlateCarree(),colors='blue',linestyles='solid')
 
     p_plot2 = ax2.flat[e_i-2].pcolormesh(lon_nc,lat_nc,varpltphys,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=v_min,vcenter=0,vmax=v_max))
     #p_plot2 = ax2.flat[e_i-2].pcolormesh(lon_nc,lat_nc,varpltphys,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vcenter=0))
@@ -465,110 +604,4 @@ latavg = np.nanmean(lat_nc*mask_onshore,axis=0)
 fig,ax = plt.subplots(1,1,figsize=[6,12])
 for a_i in range(len(alongshore_var)):
     ax.plot(alongshore_var[a_i][:-30],range(len(alongshore_var[a_i][:-30])))
-
-
-
-
-###########################
-# mass balance
-###########################
-massbpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/newmb/budget_ww/'
-varn = 'O2'
-matn = 'MATBGCF'
-matc = 'MATVARC'
-matp = 'MATPHYF'
-
-fst = 'outputs_'+varn+'_'
-dep = '_0-200m'
-
-# anth
-matrn = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matn+'.mat','r') 
-matrp = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matp+'.mat','r') 
-datan = matrn.get(matn)
-datap = matrp.get(matp)
-
-# get dates
-datemat = np.squeeze(h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matc+'.mat','r').get(matc)['date'])
-
-# get bgc variables O22
-loss = np.squeeze(datan['LOSS'])
-graze = np.squeeze(datan['GRAZE'])
-remin = np.squeeze(datan['REMIN'])
-sedre = np.squeeze(datan['SED_REMIN'])
-ammox = np.squeeze(datan['AMMOX'])
-nit = np.squeeze(datan['NIT'])
-
-
-# get phys variables
-adx = np.squeeze(datap['ADX'])
-ady = np.squeeze(datap['ADY'])
-adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
-
-# calculate respiration
-respir_calc = loss+graze+remin+sedre+ammox+nit
-
-bgc_tot_anth = np.nanmean(respir_calc,axis=0)
-
-# calculate phys terms
-phys_tot = adx+ady+adz
-phys_tot_anth = np.nanmean(phys_tot,axis=0)
-
-
-for e_i in range(2,len(exp)):
-    # read data
-    matrn = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matn+'.mat','r') 
-    matrp = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matp+'.mat','r') 
-    datan = matrn.get(matn)
-    datap = matrp.get(matp)
-    
-    
-    # get dates
-    datemat = np.squeeze(h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
-    
-    # get bgc variables N
-    loss = np.squeeze(datan['LOSS'])
-    graze = np.squeeze(datan['GRAZE'])
-    remin = np.squeeze(datan['REMIN'])
-    sedre = np.squeeze(datan['SED_REMIN'])
-    ammox = np.squeeze(datan['AMMOX'])
-    nit = np.squeeze(datan['NIT'])
-
-    # get phys variables
-    adx = np.squeeze(datap['ADX'])
-    ady = np.squeeze(datap['ADY'])
-    adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
-    
-    # calculate bgc terms
-    respir_calc = loss+graze+remin+sedre+ammox+nit
- 
-    bgc_tot_calc = respir_calc
-    
-    bgc_tot_avg = np.nanmean(bgc_tot_calc,axis=0)
-    bgc_tot_diff = bgc_tot_avg - bgc_tot_anth
-    
-    bgc_tot_pos = bgc_tot_diff*npp_pos_mask[e_i-2]
-    bgc_tot_neg = bgc_tot_diff*npp_neg_mask[e_i-2]
-    
-    bgc_sum_pos = np.nansum(bgc_tot_pos)
-    bgc_sum_neg = np.nansum(bgc_tot_neg)
-    
-    # calculate phys terms
-    phys_tot = adx+ady+adz
-    
-    phys_tot_avg = np.nanmean(phys_tot,axis=0)
-    phys_tot_diff = phys_tot_avg - phys_tot_anth
-    
-    phys_tot_pos = phys_tot_diff*npp_pos_mask[e_i-2]
-    phys_tot_neg = phys_tot_diff*npp_neg_mask[e_i-2]
-    
-    phys_sum_pos = np.nansum(phys_tot_pos)
-    phys_sum_neg = np.nansum(phys_tot_neg)
-    
-    print(exp[e_i])
-    
-    print('bgc sum pos: '+str(bgc_sum_pos))
-    print('bgc sum neg: '+str(bgc_sum_neg))
-    
-    print('phys sum pos: '+str(phys_sum_pos))
-    print('phys sum neg: '+str(phys_sum_neg))
 '''

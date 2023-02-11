@@ -46,11 +46,11 @@ exp1 = ['PNDN_only',
        'fndn90']
 
 exp2 = ['PNDN_only_realistic',
-       'pndn50_realistic', 
-       'pndn90_realistic',
+       'pndn50_fixriver', 
+       'pndn90_fixriver',
        'FNDN_only_realistic',
-        'fndn50_realistic',
-        'fndn90_realistic']
+        'fndn50_fixriver',
+        'fndn90_fixriver']
 
 #title_exp = ['50% N Red.',
 #             '50% N Red.\n50% Recy.',
