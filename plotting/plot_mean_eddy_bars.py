@@ -30,3 +30,18 @@ ax.flat[0].set_xticks([])
 plt.tight_layout()
 fig.savefig('./figs/2years/mean_eddy_bars.png',bbox_inches='tight')
 
+# broken axis 
+# https://matplotlib.org/stable/gallery/subplots_axes_and_figures/broken_axis.html
+
+fig,ax = plt.subplots(1,1,figsize=[7,5])
+ax.bar(range(len(title_exp[2:])),eddy,label='Eddy')
+ax.bar(title_exp[2:],mean,bottom=eddy,label='Mean')
+ax.set_title('NH4 transport')
+ax.set_ylabel(varstr+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
+ax.tick_params(axis='both',which='major',labelsize=axfont)
+ax.set_xticks([])
+ax.legend(loc='best',fontsize=axfont)
+ax.set_yscale('linear')
+ax.set_ylim([2000,5000])
+#plt.tight_layout()
+fig.savefig('./figs/2years/mean_eddy_sum_bars.png',bbox_inches='tight')

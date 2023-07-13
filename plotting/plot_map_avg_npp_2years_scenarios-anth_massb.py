@@ -39,6 +39,15 @@ filename = 'concat_fullts_int_avg_100m_50m_'
 
 savepath = './figs/2years/'
 
+exp1 = ['cntrl_initap',
+       'loads1617',
+       'PNDN_only',
+       'pndn50',
+       'pndn90',
+       'FNDN_only',
+       'fndn50',
+       'fndn90']
+
 exp = ['cntrl_initap_realistic',
        'fulll_2012_2017',
        'PNDN_only_realistic',
@@ -60,7 +69,7 @@ title_exp = ['CTRL',
 # roms var
 var_nc = 'var_int'
 varstr = 'npp'
-cblabel = '$\Delta$ NPP mmol m$^{-2}$'
+cblabel = '$\Delta$ NPP mmol C m$^{-2}$ d$^{-1}$'
 
 s2d = 86400
 
@@ -119,6 +128,32 @@ mask_offshore = mask_temp
 #mask7[mask9==1] = 1
 #mask_mult = mask7
 
+# control scenario 1997
+cntrl_nc1 = outpath+filename+'cntrl_initap'+'_'+varstr+'.nc'
+anth_nc1 = outpath+filename+'loads1617'+'_'+varstr+'.nc'
+# subtract from cntrl
+# convert s^-1 to d^-1
+cntrld1 = np.squeeze(Dataset(cntrl_nc1,'r')[var_nc])*s2d
+cntrld1[cntrld1>1E10] = np.nan
+cntrld1[cntrld1<=0] = np.nan
+
+# anth scenario 1997
+anthd1 = np.squeeze(Dataset(anth_nc1,'r')[var_nc])*s2d
+anthd1[anthd1>1E10] = np.nan
+anthd1[anthd1<=0] = np.nan
+# time average
+if timep == 'fullts':
+    diffmonth1 = anthd1-cntrld1
+    diffac1 = np.nanmean(anthd1,axis=0)-np.nanmean(cntrld1,axis=0)
+    cntrlavg1 = np.nanmean(cntrld1,axis=0)
+    anthavg1 = np.nanmean(anthd1,axis=0)
+
+print('cntrl_initap 1998',str(np.nanmean(cntrld1[:12])))
+print('cntrl_initap 1999',str(np.nanmean(cntrld1[12:])))
+
+print('loads1617 1998',str(np.nanmean(anthd1[:12])))
+print('loads1617 1999',str(np.nanmean(anthd1[12:])))
+
 # control scenario
 cntrl_nc = outpath+filename+'cntrl_initap_realistic'+'_'+varstr+'.nc'
 anth_nc = outpath+filename+'fulll_2012_2017'+'_'+varstr+'.nc'
@@ -137,6 +172,13 @@ if timep == 'fullts':
     diffac = np.nanmean(anthd,axis=0)-np.nanmean(cntrld,axis=0)
     cntrlavg = np.nanmean(cntrld,axis=0)
     anthavg = np.nanmean(anthd,axis=0)
+
+print('cntrl_initap_realistic 2016',str(np.nanmean(cntrld[:12])))
+print('cntrl_initap_realistic 2017',str(np.nanmean(cntrld[12:])))
+
+print('fulll_2012_2017 2016',str(np.nanmean(anthd[:12])))
+print('fulll_2012_2017 2017',str(np.nanmean(anthd[12:])))
+
 # spring
 if timep == 'spring':
     diffmonth = np.concatenate((anthd[5:8],anthd[17:20]))-np.concatenate((cntrld[5:8],cntrld[17:20]))
@@ -180,8 +222,10 @@ offshore_std_anth = np.nanstd([anth_offavg1-cntrl_offavg1,anth_offavg2-cntrl_off
 
 # outputs
 ncfiles = []
+ncfiles1 = []
 for e_i in range(len(exp)):
     ncfiles.append(outpath+filename+exp[e_i]+'_'+varstr+'.nc')
+    ncfiles1.append(outpath+filename+exp1[e_i]+'_'+varstr+'.nc')
 
 
 # LA/OC region
@@ -259,6 +303,14 @@ neg_area_onshore = np.ones((len(exp)-2))*np.nan
 pos_area_offshore =np.ones((len(exp)-2))*np.nan
 neg_area_offshore =np.ones((len(exp)-2))*np.nan
 
+pos_area_monthly = np.ones((len(exp)-2,24))*np.nan
+neg_area_monthly = np.ones((len(exp)-2,24))*np.nan
+
+pos_onshore_monthly = np.ones((len(exp)-2,24))*np.nan
+neg_onshore_monthly = np.ones((len(exp)-2,24))*np.nan
+pos_offshore_monthly = np.ones((len(exp)-2,24))*np.nan
+neg_offshore_monthly = np.ones((len(exp)-2,24))*np.nan
+
 # plot anth-cntrl, nutrient management-cntrl
 fig,ax = plt.subplots(1,3,figsize=[figw-2,4.1],sharey=True,subplot_kw=dict(projection=ccrs.PlateCarree()))
 ax_i = 0
@@ -269,10 +321,25 @@ for e_i in [1,2,5]:
     datanc = np.squeeze(Dataset(ncfiles[e_i],'r')[var_nc])*s2d
     datanc[datanc>1E10] = np.nan
     datanc[datanc<=0] = np.nan
+
+    datanc1 = np.squeeze(Dataset(ncfiles1[e_i],'r')[var_nc])*s2d
+    datanc1[datanc1>1E10] = np.nan
+    datanc1[datanc1<=0] = np.nan
+
+    data_concat = np.concatenate((datanc,datanc1))
+
+    print(exp[e_i]+' 2016',str(np.nanmean(datanc[:12])))
+    print(exp[e_i]+' 2017',str(np.nanmean(datanc[12:])))
+
+    print(exp1[e_i]+' 1998',str(np.nanmean(datanc1[:12])))
+    print(exp1[e_i]+' 1999',str(np.nanmean(datanc1[12:])))
+
     # time average
     # full 2 years
     if timep == 'fullts':
         dataavg = np.nanmean(datanc,axis=0)
+        dataavg1 = np.nanmean(datanc1,axis=0)
+        dataavg_concat = np.nanmean(data_concat,axis=0)
     # spring
     if timep == 'spring':
         dataavg = np.nanmean((np.concatenate((datanc[5:8],datanc[17:20]))),axis=0)
@@ -286,44 +353,19 @@ for e_i in [1,2,5]:
     data_onshore = np.nanmean(dataavg*mask_onshore)
     data_offshore = np.nanmean(dataavg*mask_offshore)
 
+    #varplt = np.nanmean(data_concat - np.concatenate((cntrld,cntrld1)),axis=0)
+    # 1998-1999 only
+    #varplt = dataavg1 - np.nanmean(cntrld1,axis=0)
     varplt = dataavg - cntrlavg
 
-    # calculate area of change > 5 and < -5 mmol m-2 d-1
-    # in km2
-    #npp_pos = np.where(varplt>=clinemax2)
-    #npp_neg = np.where(varplt<=clinemin2)
-    #pos_area = np.nansum(sizex[npp_pos[0],npp_pos[1]]*sizey[npp_pos[0],npp_pos[1]])
-    #neg_area = np.nansum(sizex[npp_neg[0],npp_neg[1]]*sizey[npp_neg[0],npp_neg[1]])
-    #print('area >'+str(clinemax2)+' change NPP: '+str(int(pos_area))+' km^2')
-    #print('area <'+str(clinemin2)+' change NPP: '+str(int(neg_area))+' km^2')
-    #pos_area_var[e_i-2] = pos_area
-    #neg_area_var[e_i-2] = neg_area
-    #npp_pos_mask[e_i-2,npp_pos[0],npp_pos[1]] = 1
-    #npp_neg_mask[e_i-2,npp_neg[0],npp_neg[1]] = 1
+    print(title_exp[e_i],'onshore average change value',np.nanmean(varplt*mask_onshore))
+    print(title_exp[e_i],'offshore average change value',np.nanmean(varplt*mask_offshore))
 
-    #npp_pos_onshore = np.where(varplt*mask_onshore>=clinemax2)
-    #npp_neg_onshore = np.where(varplt*mask_onshore<=clinemin2)
-    #npp_pos_offshore = np.where(varplt*mask_offshore>=clinemax2)
-    #npp_neg_offshore = np.where(varplt*mask_offshore<=clinemin2)
+    pos_where = np.where(varplt>0)
+    pos_area = np.nansum(sizex[pos_where[0],pos_where[1]]*sizey[pos_where[0],pos_where[1]])
+    print(title_exp[e_i],'spatial increase km2',pos_area)
 
-    # area onshore/offshore >/< clinemax/clinemin
-    #pos_area_onshore[e_i-2] = np.nansum(sizex[npp_pos_onshore[0],npp_pos_onshore[1]]*sizey[npp_pos_onshore[0],npp_pos_onshore[1]])
-    #neg_area_onshore[e_i-2] = np.nansum(sizex[npp_neg_onshore[0],npp_neg_onshore[1]]*sizey[npp_neg_onshore[0],npp_neg_onshore[1]])
-    #pos_area_offshore[e_i-2] = np.nansum(sizex[npp_pos_offshore[0],npp_pos_offshore[1]]*sizey[npp_pos_offshore[0],npp_pos_offshore[1]])
-    #neg_area_offshore[e_i-2] = np.nansum(sizex[npp_neg_offshore[0],npp_neg_offshore[1]]*sizey[npp_neg_offshore[0],npp_neg_offshore[1]])
 
-    ## get anth values of where scenario > anth and scenario < anth
-    #anth_onshore_pos = np.nanmean((anthavg*mask_onshore)[npp_pos]) 
-    #anth_onshore_neg = np.nanmean((anthavg*mask_onshore)[npp_neg]) 
-    #anth_offshore_pos = np.nanmean((anthavg*mask_offshore)[npp_pos]) 
-    #anth_offshore_neg = np.nanmean((anthavg*mask_offshore)[npp_neg]) 
-
-    # calculate mean of onshore vs offshore where scenario > anth
-    # and scenario < anth
-    #onshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_onshore)[npp_pos]) - anth_onshore_pos
-    #onshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_onshore)[npp_neg]) - anth_onshore_neg
-    #offshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_pos]) - anth_offshore_pos
-    #offshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_neg]) - anth_offshore_neg
     
     # plot maps
     p_plot = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=-15,vcenter=0,vmax=15))
@@ -355,8 +397,9 @@ cb.ax.tick_params(axis='both',which='major',labelsize=axfont)
 fig.suptitle('Scenario - CTRL',fontsize=axfont,y=0.98)
 
 
-#savename = 'map_2years_100m_int_'+varstr+'_'+region_name+'_'+exp[-1]+'_abs_fullts.png'
 savename = 'map_2years-NM_100m_int_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
+#savename = 'map_concat_4years-NM_100m_int_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
+#savename = 'map_2years-NM_100m_int_'+varstr+'_'+region_name+'_abs_'+timep+'9899.png'
 
 fig.savefig(savepath+savename,bbox_inches='tight')
 print(savename)
@@ -375,6 +418,12 @@ for e_i in range(2,len(exp)):
     datanc = np.squeeze(Dataset(ncfiles[e_i],'r')[var_nc])*s2d
     datanc[datanc>1E10] = np.nan
     datanc[datanc<=0] = np.nan
+
+    print(exp[e_i]+' 2016',str(np.nanmean(datanc[:12])))
+    print(exp[e_i]+' 2017',str(np.nanmean(datanc[12:])))
+
+    print(exp[e_i]+' 2016',str(np.nanmean(datanc[:12])))
+    print(exp[e_i]+' 2017',str(np.nanmean(datanc[12:])))
     # time average
     # full 2 years
     if timep == 'fullts':
@@ -403,7 +452,20 @@ for e_i in range(2,len(exp)):
     #onshore_std[e_i-2] = np.nanstd([data_onavg1-anth_onavg1,data_onavg2-anth_onavg2])
     #offshore_std[e_i-2] = np.nanstd([data_offavg1-anth_offavg1,data_offavg2-anth_offavg2])
 
+    diff_monthly = datanc-anthd
     varplt = dataavg - anthavg
+    varplt_cntrl = dataavg-cntrlavg
+
+    print(title_exp[e_i],'onshore average change value from ANTH',np.nanmean(varplt*mask_onshore))
+    print(title_exp[e_i],'offshore average change value from ANTH',np.nanmean(varplt*mask_offshore))
+
+    print(title_exp[e_i],'onshore 5% change value from ANTH',np.nanpercentile(varplt*mask_onshore,5))
+    print(title_exp[e_i],'offshore 5% change value from ANTH',np.nanpercentile(varplt*mask_offshore,5))
+
+    pos_where = np.where(varplt_cntrl>0)
+    pos_area = np.nansum(sizex[pos_where[0],pos_where[1]]*sizey[pos_where[0],pos_where[1]])
+    print(title_exp[e_i],'spatial increase km2',pos_area)
+
 
     sce_anth[e_i-2] = varplt
     sce_anth_2016[e_i-2] = np.nanmean(datanc[:12])
@@ -430,12 +492,32 @@ for e_i in range(2,len(exp)):
 
     # calculate area of change > 5 and < -5 mmol m-2 d-1
     # in km2
-    npp_pos = np.where(varplt>=clinemax2)
-    npp_neg = np.where(varplt<=clinemin2)
+    #npp_pos = np.where(varplt>=clinemax2)
+    #npp_neg = np.where(varplt<=clinemin2)
+    npp_pos = np.where(varplt>=0)
+    npp_neg = np.where(varplt<=0)
     pos_area = np.nansum(sizex[npp_pos[0],npp_pos[1]]*sizey[npp_pos[0],npp_pos[1]])
     neg_area = np.nansum(sizex[npp_neg[0],npp_neg[1]]*sizey[npp_neg[0],npp_neg[1]])
-    print('area >'+str(clinemax2)+' change NPP: '+str(int(pos_area))+' km^2')
-    print('area <'+str(clinemin2)+' change NPP: '+str(int(neg_area))+' km^2')
+
+    # calculate area monthly
+    for m_i in range(diff_monthly.shape[0]):
+        npp_pos_monthly = np.where(diff_monthly[m_i]>=clinemax2)
+        npp_neg_monthly = np.where(diff_monthly[m_i]<=clinemin2)
+
+        npp_pos_onshore_monthly = np.where(diff_monthly[m_i]*mask_onshore>=clinemax2)
+        npp_neg_onshore_monthly = np.where(diff_monthly[m_i]*mask_onshore<=clinemin2)
+
+        npp_pos_offshore_monthly = np.where(diff_monthly[m_i]*mask_offshore>=clinemax2)
+        npp_neg_offshore_monthly = np.where(diff_monthly[m_i]*mask_offshore<=clinemin2)
+
+        pos_area_monthly[e_i-2,m_i] = np.nansum(sizex[npp_pos_monthly[0],npp_pos_monthly[1]]*sizey[npp_pos_monthly[0],npp_pos_monthly[1]])
+        neg_area_monthly[e_i-2,m_i] = np.nansum(sizex[npp_neg_monthly[0],npp_neg_monthly[1]]*sizey[npp_neg_monthly[0],npp_neg_monthly[1]])
+
+        pos_onshore_monthly[e_i-2,m_i] = np.nansum(sizex[npp_pos_onshore_monthly[0],npp_pos_onshore_monthly[1]]*sizey[npp_pos_onshore_monthly[0],npp_pos_onshore_monthly[1]])
+        neg_onshore_monthly[e_i-2,m_i] = np.nansum(sizex[npp_neg_onshore_monthly[0],npp_neg_onshore_monthly[1]]*sizey[npp_neg_onshore_monthly[0],npp_neg_onshore_monthly[1]])
+        pos_offshore_monthly[e_i-2,m_i] = np.nansum(sizex[npp_pos_offshore_monthly[0],npp_pos_offshore_monthly[1]]*sizey[npp_pos_offshore_monthly[0],npp_pos_offshore_monthly[1]])
+        neg_offshore_monthly[e_i-2,m_i] = np.nansum(sizex[npp_neg_offshore_monthly[0],npp_neg_offshore_monthly[1]]*sizey[npp_neg_offshore_monthly[0],npp_neg_offshore_monthly[1]])
+
     pos_area_var[e_i-2] = pos_area
     neg_area_var[e_i-2] = neg_area
     npp_pos_mask[e_i-2,npp_pos[0],npp_pos[1]] = 1
@@ -599,21 +681,38 @@ fig.savefig(savepath+'bar_'+varstr+'_area_'+timep+'.png',bbox_inches='tight')
 ##############################################
 # area of onshore/offshore var >/< clinemax/clinemin 
 ##############################################
-fig,ax = plt.subplots(2,1,figsize=[12,8],sharex=True)
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_onshore,label='Onshore')
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_offshore,bottom=pos_area_onshore,label='Offshore')
-ax.flat[1].bar(title_exp[2:],neg_area_onshore)
-ax.flat[1].bar(title_exp[2:],neg_area_offshore,bottom=neg_area_onshore)
-fig.suptitle('Scenario - ANTH',fontsize=axfont)
-ax.flat[0].set_title('Area of Increased NPP >'+str(clinemax2)+' mmol m$^{-2}$',fontsize=axfont)
-ax.flat[1].set_title('Area of Decreased NPP <'+str(clinemin2)+' mmol m$^{-2}$',fontsize=axfont)
-ax.flat[0].tick_params(axis='both',which='major',labelsize=axfont)
-ax.flat[1].tick_params(axis='both',which='major',labelsize=axfont)
-ax.flat[0].legend(loc='best',fontsize=axfont)
-fig.supylabel('Area in km$^2$',fontsize=axfont)
+# put on same figure
+fig,ax = plt.subplots(1,1,figsize=[10,6],sharex=True)
+ax.bar(title_exp[2:],-1*neg_area_onshore,color='aqua',label='Inshore')
+ax.bar(title_exp[2:],-1*neg_area_offshore,bottom=neg_area_onshore*-1,color='navy',label='Offshore')
+ax.bar(title_exp[2:],pos_area_onshore,color='aqua')
+ax.bar(title_exp[2:],pos_area_offshore,bottom=pos_area_onshore,color='navy')
+ax.axhline(0,color='k')
+ax.set_ylim([-1750,500])
+ax.set_yticks(list(range(-1750,750,250)),np.abs(list(range(-1750,750,250))))
+ax.set_title('Scenario - ANTH',fontsize=axfont)
+#ax.set_title('Area of NPP > or <$\pm$'+str(clinemax2)+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
+ax.tick_params(axis='both',which='major',labelsize=axfont)
+ax.legend(loc='best',fontsize=axfont)
+ax.set_ylabel('Area (km$^2$)',fontsize=axfont)
 fig.tight_layout()
-fig.savefig(savepath+'bar_area_pos_neg_'+varstr+'_onshore_offshore_'+timep+'.png',bbox_inches='tight')
+fig.savefig(savepath+'bar_area_pos_neg_'+varstr+'_onshore_offshore_'+timep+'_oneplot.png',bbox_inches='tight')
 
+# 2 subplots
+#fig,ax = plt.subplots(2,1,figsize=[12,8],sharex=True)
+#ax.flat[0].bar(title_exp[2:],neg_area_onshore)
+#ax.flat[0].bar(title_exp[2:],neg_area_offshore,bottom=neg_area_onshore)
+#ax.flat[1].bar(range(len(title_exp[2:])),pos_area_onshore,label='Onshore')
+#ax.flat[1].bar(range(len(title_exp[2:])),pos_area_offshore,bottom=pos_area_onshore,label='Offshore')
+#fig.suptitle('Scenario - ANTH',fontsize=axfont)
+#ax.flat[0].set_title('Area of Decreased NPP <'+str(clinemin2)+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
+#ax.flat[1].set_title('Area of Increased NPP >'+str(clinemax2)+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
+#ax.flat[0].tick_params(axis='both',which='major',labelsize=axfont)
+#ax.flat[1].tick_params(axis='both',which='major',labelsize=axfont)
+#ax.flat[0].legend(loc='best',fontsize=axfont)
+#fig.supylabel('Area in km$^2$',fontsize=axfont)
+#fig.tight_layout()
+#fig.savefig(savepath+'bar_area_pos_neg_'+varstr+'_onshore_offshore_'+timep+'.png',bbox_inches='tight')
 
 
 ####################

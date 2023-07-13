@@ -45,15 +45,6 @@ exp = ['cntrl_initap_realistic',
        'fndn50_fixriver',
        'fndn90_fixriver']
 
-exp1 = ['cntrl_initap',
-       'loads1617',
-       'PNDN_only',
-       'pndn50',
-       'pndn90',
-       'FNDN_only',
-       'fndn50',
-       'fndn90']
-
 title_exp = ['CTRL',
              'ANTH',
              '50% N Red.',
@@ -65,7 +56,7 @@ title_exp = ['CTRL',
 
 # roms var
 varstr = 'respiration'
-cblabel = '$\Delta$ '+varstr+' mmol m$^{-3}$ d$^{-1}$'
+cblabel = '$\Delta$ '+varstr+' mmol m$^{-2}$ d$^{-1}$'
 
 s2d = 86400
 
@@ -90,7 +81,6 @@ pn_nc = l2grid.pn_nc
 mask_nc = l2grid.mask_nc
 
 # get size of cells
-# in km
 sizex = 1E-3/pm_nc
 sizey = 1E-3/pn_nc
 
@@ -169,66 +159,21 @@ v_min = -10
 massbpath = '/data/project3/minnaho/opc_scenarios/plotting/massbalance_L2/newmb/budget_ww/'
 varn = 'O2'
 matn = 'MATBGCF'
+matc = 'MATVARC'
 matp = 'MATPHYF'
 
 fst = 'outputs_'+varn+'_'
 dep = '_0-200m'
 
-################
-# anth 1998-1999
-################
-matrn = h5py.File(massbpath+fst+'loads1617'+dep+'/'+matn+'.mat','r') 
-matrp = h5py.File(massbpath+fst+'loads1617'+dep+'/'+matp+'.mat','r') 
-datan = matrn.get(matn)
-datap = matrp.get(matp)
-
-# get bgc variables O2
-loss = np.squeeze(datan['LOSS'])
-graze = np.squeeze(datan['GRAZE'])
-remin = np.squeeze(datan['REMIN'])
-sedre = np.squeeze(datan['SED_REMIN'])
-ammox = np.squeeze(datan['AMMOX'])
-nit = np.squeeze(datan['NIT'])
-
-# get phys variables
-adx = np.squeeze(datap['ADX'])
-ady = np.squeeze(datap['ADY'])
-adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
-
-# calculate respiration
-respir_calc = loss+graze+remin+sedre+ammox+nit
-print('anth 1998',str(np.nanmean(respir_calc[:12])*s2d))
-print('anth 1999',str(np.nanmean(respir_calc[12:])*s2d))
-
-# calculate phys terms
-phys_tot = adx+ady+adz
-
-# fullts
-if timep == 'fullts':
-    bgc_tot_anth1 = np.nanmean(respir_calc,axis=0)
-    anth_onshore1 = np.nanmean(respir_calc*mask_onshore)
-    anth_offshore1 = np.nanmean(respir_calc*mask_offshore)
-    phys_tot_anth1 = np.nanmean(phys_tot,axis=0)
-# spring
-if timep == 'spring':
-    bgc_tot_anth = np.nanmean((np.concatenate((respir_calc[5:8],respir_calc[17:20]))),axis=0)
-    phys_tot_anth = np.nanmean((np.concatenate((phys_tot[5:8],phys_tot[17:20]))),axis=0)
-# summer
-if timep == 'summer':
-    bgc_tot_anth = np.nanmean((np.concatenate((respir_calc[8:11],respir_calc[20:23]))),axis=0)
-    phys_tot_anth = np.nanmean((np.concatenate((phys_tot[8:11],phys_tot[20:23]))),axis=0)
-# winter
-if timep == 'winter':
-    bgc_tot_anth = np.nanmean((np.concatenate((respir_calc[2:5],respir_calc[14:17]))),axis=0)
-    phys_tot_anth = np.nanmean((np.concatenate((phys_tot[2:5],phys_tot[14:17]))),axis=0)
-
-################
-# anth 2016-2017
-################
+# anth
 matrn = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matn+'.mat','r') 
 matrp = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matp+'.mat','r') 
 datan = matrn.get(matn)
 datap = matrp.get(matp)
+
+# get dates
+datemat = np.squeeze(h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matc+'.mat','r').get(matc)['date'])
+dt = pd.to_datetime(datemat-719529, unit='D')
 
 # get bgc variables O2
 loss = np.squeeze(datan['LOSS'])
@@ -254,8 +199,6 @@ phys_tot = adx+ady+adz
 # fullts
 if timep == 'fullts':
     bgc_tot_anth = np.nanmean(respir_calc,axis=0)
-    anth_onshore = np.nanmean(respir_calc*mask_onshore)
-    anth_offshore = np.nanmean(respir_calc*mask_offshore)
     phys_tot_anth = np.nanmean(phys_tot,axis=0)
 # spring
 if timep == 'spring':
@@ -270,62 +213,15 @@ if timep == 'winter':
     bgc_tot_anth = np.nanmean((np.concatenate((respir_calc[2:5],respir_calc[14:17]))),axis=0)
     phys_tot_anth = np.nanmean((np.concatenate((phys_tot[2:5],phys_tot[14:17]))),axis=0)
 
-#################
-# cntrl 1998-1999
-#################
-matrn = h5py.File(massbpath+fst+'cntrl_initap'+dep+'/'+matn+'.mat','r') 
-matrp = h5py.File(massbpath+fst+'cntrl_initap'+dep+'/'+matp+'.mat','r') 
-datan = matrn.get(matn)
-datap = matrp.get(matp)
-
-# get bgc variables O2
-loss = np.squeeze(datan['LOSS'])
-graze = np.squeeze(datan['GRAZE'])
-remin = np.squeeze(datan['REMIN'])
-sedre = np.squeeze(datan['SED_REMIN'])
-ammox = np.squeeze(datan['AMMOX'])
-nit = np.squeeze(datan['NIT'])
-
-# get phys variables
-adx = np.squeeze(datap['ADX'])
-ady = np.squeeze(datap['ADY'])
-adz = np.squeeze(datap['ADZ_bot'])+np.squeeze(datap['ADZ_top'])
-
-# calculate respiration
-respir_calc = loss+graze+remin+sedre+ammox+nit
-print('cntrl 1998',str(np.nanmean(respir_calc[:12])*s2d))
-print('cntrl 1999',str(np.nanmean(respir_calc[12:])*s2d))
-
-# calculate phys terms
-phys_tot = adx+ady+adz
-
-# fullts
-if timep == 'fullts':
-    respir_calc_cntrl1 = respir_calc
-    bgc_tot_cntrl1 = np.nanmean(respir_calc,axis=0)
-    cntrl_onshore1 = np.nanmean(respir_calc*mask_onshore,axis=0)
-    cntrl_offshore1 = np.nanmean(respir_calc*mask_offshore,axis=0)
-    phys_tot_cntrl = np.nanmean(phys_tot,axis=0)
-# spring
-if timep == 'spring':
-    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[5:8],respir_calc[17:20]))),axis=0)
-    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[5:8],phys_tot[17:20]))),axis=0)
-# summer
-if timep == 'summer':
-    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[8:11],respir_calc[20:23]))),axis=0)
-    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[8:11],phys_tot[20:23]))),axis=0)
-# winter
-if timep == 'winter':
-    bgc_tot_cntrl = np.nanmean((np.concatenate((respir_calc[2:5],respir_calc[14:17]))),axis=0)
-    phys_tot_cntrl = np.nanmean((np.concatenate((phys_tot[2:5],phys_tot[14:17]))),axis=0)
-
-################
-# cntrl 2016-2017
-################
+# cntrl
 matrn = h5py.File(massbpath+fst+'cntrl_initap_realistic'+dep+'/'+matn+'.mat','r') 
 matrp = h5py.File(massbpath+fst+'cntrl_initap_realistic'+dep+'/'+matp+'.mat','r') 
 datan = matrn.get(matn)
 datap = matrp.get(matp)
+
+# get dates
+datemat = np.squeeze(h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matc+'.mat','r').get(matc)['date'])
+dt = pd.to_datetime(datemat-719529, unit='D')
 
 # get bgc variables O2
 loss = np.squeeze(datan['LOSS'])
@@ -350,10 +246,7 @@ phys_tot = adx+ady+adz
 
 # fullts
 if timep == 'fullts':
-    respir_calc_cntrl = respir_calc
     bgc_tot_cntrl = np.nanmean(respir_calc,axis=0)
-    cntrl_onshore = np.nanmean(respir_calc*mask_onshore,axis=0)
-    cntrl_offshore = np.nanmean(respir_calc*mask_offshore,axis=0)
     phys_tot_cntrl = np.nanmean(phys_tot,axis=0)
 # spring
 if timep == 'spring':
@@ -409,20 +302,15 @@ for e_i in [1,2,5]:
     if e_i == 1:
         matrn = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matn+'.mat','r')
         matrp = h5py.File(massbpath+fst+'L2SCB_AP'+dep+'/'+matp+'.mat','r')
-        matrn1 = h5py.File(massbpath+fst+'loads1617'+dep+'/'+matn+'.mat','r')
-        matrp1 = h5py.File(massbpath+fst+'loads1617'+dep+'/'+matp+'.mat','r')
     else:
         matrn = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matn+'.mat','r')
         matrp = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matp+'.mat','r')
-
-        matrn1 = h5py.File(massbpath+fst+exp1[e_i]+dep+'/'+matn+'.mat','r')
-        matrp1 = h5py.File(massbpath+fst+exp1[e_i]+dep+'/'+matp+'.mat','r')
+        datemat = np.squeeze(h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
 
     datan = matrn.get(matn)
     datap = matrp.get(matp)
 
-    datan1 = matrn1.get(matn)
-    datap1 = matrp1.get(matp)
+    # get dates
 
     # get bgc variables N
     loss = np.squeeze(datan['LOSS'])
@@ -431,49 +319,19 @@ for e_i in [1,2,5]:
     sedre = np.squeeze(datan['SED_REMIN'])
     ammox = np.squeeze(datan['AMMOX'])
     nit = np.squeeze(datan['NIT'])
-
-    loss1  = np.squeeze(datan1['LOSS'])
-    graze1 = np.squeeze(datan1['GRAZE'])
-    remin1 = np.squeeze(datan1['REMIN'])
-    sedre1 = np.squeeze(datan1['SED_REMIN'])
-    ammox1 = np.squeeze(datan1['AMMOX'])
-    nit1   = np.squeeze(datan1['NIT'])
-
     # calculate bgc terms
     respir_calc = loss+graze+remin+sedre+ammox+nit
-    respir_calc1 = loss1+graze1+remin1+sedre1+ammox1+nit1
 
     bgc_tot_calc = respir_calc
-    bgc_tot_calc1 = respir_calc1
-
-    bgc_tot_calc_concat = np.concatenate((bgc_tot_calc1,bgc_tot_calc))
-
-    print(exp[e_i],'2016',str(np.nanmean(respir_calc[:12])*s2d))
-    print(exp[e_i],'2017',str(np.nanmean(respir_calc[12:])*s2d))
-
-    print(exp1[e_i],'1998',str(np.nanmean(respir_calc1[:12])*s2d))
-    print(exp1[e_i],'1999',str(np.nanmean(respir_calc1[12:])*s2d))
 
     if timep == 'fullts':
         bgc_tot_sce = np.nanmean(respir_calc,axis=0)
-        bgc_tot_sce_concat = np.nanmean(np.concatenate((bgc_tot_calc1,bgc_tot_calc)),axis=0)
         phys_tot_sce = np.nanmean(phys_tot,axis=0)
 
-    bgc_tot_diff = (bgc_tot_sce-bgc_tot_cntrl)*s2d
-    bgc_tot_diff_concat = np.nanmean(bgc_tot_calc_concat - np.concatenate((respir_calc_cntrl1,respir_calc_cntrl)),axis=0)*s2d
+    bgc_tot_diff = (bgc_tot_sce - bgc_tot_cntrl)*s2d
 
     print('maps',title_exp[e_i])
     varpltbgc = bgc_tot_diff
-    #varpltbgc = bgc_tot_diff_concat
-    #varpltbgc = (np.nanmean(bgc_tot_calc1,axis=0) - bgc_tot_cntrl1)*s2d
-
-    print(title_exp[e_i],'onshore average change value',np.nanmean(varpltbgc*mask_onshore))
-    print(title_exp[e_i],'offshore average change value',np.nanmean(varpltbgc*mask_offshore))
-
-    pos_where = np.where(varpltbgc>0)
-    pos_area = np.nansum(sizex[pos_where[0],pos_where[1]]*sizey[pos_where[0],pos_where[1]])
-    print(title_exp[e_i],'spatial increase km2',pos_area)
-
 
     p_plot1 = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=-15,vcenter=0,vmax=15))
     #p_plot1 = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varpltbgc,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vcenter=0))
@@ -508,14 +366,10 @@ cb1.set_label(cblabel,fontsize=axfont)
 cb1.ax.tick_params(axis='both',which='major',labelsize=axfont)
 
 savename1 = 'map_2years-anth_100m_bgc_NM_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
-#savename1 = 'map_concat_4years-anth_100m_bgc_NM_'+varstr+'_'+region_name+'_abs_'+timep+'.png'
-#savename1 = 'map_2years-anth_100m_bgc_NM_'+varstr+'_'+region_name+'_abs_'+timep+'_9899.png'
 
 fig.savefig(savepath+savename1,bbox_inches='tight')
 
-#########################
 # plot each scenario-anth
-#########################
 
 fig1,ax1 = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
 fig2,ax2 = plt.subplots(2,3,figsize=[figw,figh],subplot_kw=dict(projection=ccrs.PlateCarree()))
@@ -526,6 +380,8 @@ for e_i in range(2,len(exp)):
     matrp = h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matp+'.mat','r') 
     datan = matrn.get(matn)
     datap = matrp.get(matp)
+    # get dates
+    datemat = np.squeeze(h5py.File(massbpath+fst+exp[e_i]+dep+'/'+matc+'.mat','r').get(matc)['date'])
     # get bgc variables N
     loss = np.squeeze(datan['LOSS'])
     graze = np.squeeze(datan['GRAZE'])
@@ -566,8 +422,6 @@ for e_i in range(2,len(exp)):
 
     bgc_tot_diff = (bgc_tot_sce - bgc_tot_anth)*s2d
     phys_tot_diff = (phys_tot_sce - phys_tot_anth)*s2d
-
-    bgc_tot_diff_cntrl = (bgc_tot_sce - bgc_tot_cntrl)*s2d
     
     bgc_tot_pos = bgc_tot_diff*npp_pos_mask[e_i-2]
     bgc_tot_neg = bgc_tot_diff*npp_neg_mask[e_i-2]
@@ -584,45 +438,8 @@ for e_i in range(2,len(exp)):
     print('maps',title_exp[e_i])
     varpltbgc = bgc_tot_diff
     varpltphys = phys_tot_diff
-
-    print(title_exp[e_i],'onshore average change value from ANTH',np.nanmean(varpltbgc*mask_onshore))
-    print(title_exp[e_i],'offshore average change value from ANTH',np.nanmean(varpltbgc*mask_offshore))
-
-    print(title_exp[e_i],'onshore 5% change value from ANTH',np.nanpercentile(varpltbgc*mask_onshore,5))
-    print(title_exp[e_i],'offshore 5% change value from ANTH',np.nanpercentile(varpltbgc*mask_offshore,5))
-
-    pos_where = np.where(bgc_tot_diff_cntrl>0)
-    pos_area = np.nansum(sizex[pos_where[0],pos_where[1]]*sizey[pos_where[0],pos_where[1]])
-    print(title_exp[e_i],'spatial increase km2',pos_area)
-
-
-
-    pos_where = np.where(varpltbgc<0)
-    pos_area = np.nansum(sizex[pos_where[0],pos_where[1]]*sizey[pos_where[0],pos_where[1]])
-    print(title_exp[e_i],'spatial decrease km2 from ANTH',pos_area)
-
-
-    data_onshore = np.nanmean(respir_calc*mask_onshore)
-    data_offshore = np.nanmean(respir_calc*mask_offshore)
-
-    onshore_var[e_i-2] = data_onshore - anth_onshore
-    offshore_var[e_i-2] = data_offshore - anth_offshore
-
-    onshore_std_lower[e_i-2] = np.nanpercentile(varpltbgc*mask_onshore,25)
-    onshore_std_upper[e_i-2] = np.nanpercentile(varpltbgc*mask_onshore,75)
-    offshore_std_lower[e_i-2] = np.nanpercentile(varpltbgc*mask_offshore,25)
-    offshore_std_upper[e_i-2] = np.nanpercentile(varpltbgc*mask_offshore,75)
-
-    npp_pos_onshore = np.where(varpltbgc*mask_onshore>=clinemax2)
-    npp_neg_onshore = np.where(varpltbgc*mask_onshore<=clinemin2)
-    npp_pos_offshore = np.where(varpltbgc*mask_offshore>=clinemax2)
-    npp_neg_offshore = np.where(varpltbgc*mask_offshore<=clinemin2)
-
-    # area onshore/offshore >/< clinemax/clinemin
-    pos_area_onshore[e_i-2] = np.nansum(sizex[npp_pos_onshore[0],npp_pos_onshore[1]]*sizey[npp_pos_onshore[0],npp_pos_onshore[1]])
-    neg_area_onshore[e_i-2] = np.nansum(sizex[npp_neg_onshore[0],npp_neg_onshore[1]]*sizey[npp_neg_onshore[0],npp_neg_onshore[1]])
-    pos_area_offshore[e_i-2] = np.nansum(sizex[npp_pos_offshore[0],npp_pos_offshore[1]]*sizey[npp_pos_offshore[0],npp_pos_offshore[1]])
-    neg_area_offshore[e_i-2] = np.nansum(sizex[npp_neg_offshore[0],npp_neg_offshore[1]]*sizey[npp_neg_offshore[0],npp_neg_offshore[1]])
+    #onshore_var[e_i-2] = data_onshore - anth_onshore
+    #offshore_var[e_i-2] = data_offshore - anth_offshore
 
     # interannual variability
     # difference of scenario from cntrl
@@ -656,6 +473,7 @@ for e_i in range(2,len(exp)):
     #onshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_onshore)[npp_neg]) - anth_onshore_neg
     #offshore_var_pos[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_pos]) - anth_offshore_pos
     #offshore_var_neg[e_i-2] = np.nanmean((dataavg*mask_offshore)[npp_neg]) - anth_offshore_neg
+    #
 
     ## alongshore profile
     #alongshore_var[e_i-2] = np.nanmean(((dataavg*mask_onshore)-(anthavg*mask_onshore)),axis=0)
@@ -723,26 +541,6 @@ savename2 = 'map_2years-anth_100m_phys_'+varstr+'_'+region_name+'_abs_'+timep+'.
 
 fig1.savefig(savepath+savename1,bbox_inches='tight')
 fig2.savefig(savepath+savename2,bbox_inches='tight')
-
-##############################################
-# area of onshore/offshore var >/< clinemax/clinemin 
-##############################################
-fig,ax = plt.subplots(2,1,figsize=[12,8],sharex=True)
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_onshore,label='Onshore')
-ax.flat[0].bar(range(len(title_exp[2:])),pos_area_offshore,bottom=pos_area_onshore,label='Offshore')
-ax.flat[1].bar(title_exp[2:],neg_area_onshore)
-ax.flat[1].bar(title_exp[2:],neg_area_offshore,bottom=neg_area_onshore)
-fig.suptitle('Scenario - ANTH',fontsize=axfont)
-ax.flat[0].set_title('Area of Increased Respiration >'+str(clinemax2)+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
-ax.flat[1].set_title('Area of Decreased Respiration <'+str(clinemin2)+' mmol m$^{-2}$ d$^{-1}$',fontsize=axfont)
-ax.flat[0].tick_params(axis='both',which='major',labelsize=axfont)
-ax.flat[1].tick_params(axis='both',which='major',labelsize=axfont)
-ax.flat[0].legend(loc='best',fontsize=axfont)
-#ax.flat[0].set_ylim([0,4])
-fig.supylabel('Area in km$^2$',fontsize=axfont)
-fig.tight_layout()
-fig.savefig(savepath+'bar_area_pos_neg_'+varstr+'_onshore_offshore_'+timep+'.png',bbox_inches='tight')
-
 
 '''
 ###########################

@@ -37,7 +37,7 @@ elif loc == 'bw':
 
 xplt = np.nanmean(sizex[ymin:ymax,:],axis=0)
 
-cmap1 = cmocean.cm.balance
+cmap1 = cmocean.cm.balance_r
 
 savepath = './figs/2years/'
 
@@ -189,46 +189,65 @@ plt.close()
 lstyle = ['-','--',':','-','--',':']
 profcols = ['orange','orange','orange','gray','gray','gray']
 
-fig,ax = plt.subplots(1,1,figsize=[8,12])
+fig,ax = plt.subplots(1,2,figsize=[12,6],sharey=True)
 for e_i in range(2,len(exp)):
     avg2year_nc = Dataset(avg2year_path+'avg2years_0_200_'+var_nc+'_'+exp[e_i]+'.nc','r')
     # calculate mean over y=ymin-ymax
     datanc = np.squeeze(avg2year_nc['var'])
     datanc[datanc>1E10] = np.nan
-    ncslice = np.nanmean(datanc[:,ymin:ymax,:],axis=1)
-    prof_exp = np.nanmean(ncslice-slice_fulll,axis=1)
-    ax.plot(prof_exp,depth_arr,linestyle=lstyle[e_i-2],color=profcols[e_i-2],label=title_exp[e_i])
+    #ncslice = np.nanmean(datanc[:,ymin:ymax,:],axis=1)
+    #prof_exp = np.nanmean(ncslice-slice_fulll,axis=1)
+    prof_exp = np.nanmean(datanc-data_fulll,axis=(1,2))
+    
+    if e_i in range(2,5):
+        ax.flat[0].plot(prof_exp,depth_arr,linestyle=lstyle[e_i-2],linewidth=3,color=profcols[e_i-2],label=title_exp[e_i])
+    else: 
+        ax.flat[1].plot(prof_exp,depth_arr,linestyle=lstyle[e_i-2],linewidth=3,color=profcols[e_i-2],label=title_exp[e_i])
 
 if var_nc == 'O2' or var_nc == 'biomass':
-    ax.set_xlabel('$\Delta$ '+var_nc+' mmol m$^{-3}$',fontsize=axfont)
+    #ax.flat[0].set_xlabel('$\Delta$ '+var_nc+' mmol m$^{-3}$',fontsize=axfont)
+    fig.supxlabel('$\Delta$ '+var_nc+' mmol m$^{-3}$',fontsize=axfont)
 
 if var_nc == 'pH':
-    ax.set_xlabel('$\Delta$ '+var_nc,fontsize=axfont)
+    #ax.flat[0].set_xlabel('$\Delta$ '+var_nc,fontsize=axfont)
+    fig.supxlabel('$\Delta$ '+var_nc,fontsize=axfont)
+    ax.flat[0].set_xlim([-0.0015,0.0025])
+    ax.flat[1].set_xlim([-0.0015,0.0025])
 
 if var_nc == 'O2':
     if loc == 'cat':
-        ax.set_xlim([-1.5,3])
+        ax.flat[0].set_xlim([-1.5,3])
+        ax.flat[1].set_xlim([-1.5,3])
     if loc == 'sn':
-        ax.set_xlim([-3.5,2.5])
+        ax.flat[0].set_xlim([-3.5,2.5])
+        ax.flat[1].set_xlim([-3.5,2.5])
     if loc == 'bw':
-        ax.set_xlim([-0.75,1.5])
+        ax.flat[0].set_xlim([-0.75,1.5])
+        ax.flat[1].set_xlim([-0.75,1.5])
 
 if var_nc == 'biomass':
-    ax.set_xlim([-0.5,0.6])
-    ax.set_ylim([0,80])
+    ax.flat[0].set_xlim([-0.5,0.6])
+    ax.flat[0].set_ylim([0,80])
+    ax.flat[1].set_xlim([-0.5,0.6])
+    ax.flat[1].set_ylim([0,80])
 
-ax.invert_yaxis()
-ax.set_ylabel('Depth (m)',fontsize=axfont)
-ax.set_title('Scenario - ANTH',fontsize=axfont)
-ax.tick_params(axis='both',which='major',labelsize=axfont)
-if var_nc != 'pH':
-    ax.legend(loc='lower right',fontsize=axfont)
-else:
-    ax.legend(loc='lower left',fontsize=axfont)
+ax.flat[0].invert_yaxis()
+#ax.flat[1].invert_yaxis()
 
-# for pH 
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=60,ha='right')
+ax.flat[0].set_ylabel('Depth (m)',fontsize=axfont)
+#ax.set_title('Scenario - ANTH',fontsize=axfont)
+ax.flat[0].tick_params(axis='both',which='major',labelsize=axfont)
+ax.flat[1].tick_params(axis='both',which='major',labelsize=axfont)
+if var_nc == 'pH':
+    ax.flat[0].legend(loc='best',fontsize=axfont-2)
+    #ax.flat[0].set_xticklabels(ax.get_xticklabels(),rotation=60,ha='right')
+    ax.flat[1].legend(loc='best',fontsize=axfont-2)
+    #ax.flat[1].set_xticklabels(ax.get_xticklabels(),rotation=60,ha='right')
 
-fig.savefig(savepath+'cs_profile_'+var_nc+'_'+loc+'.png',bbox_inches='tight')
+if var_nc == 'O2':
+    ax.flat[0].legend(loc='lower right',fontsize=axfont-2)
+    ax.flat[1].legend(loc='upper right',fontsize=axfont-2)
+
+fig.savefig(savepath+'cs_profile_'+var_nc+'_'+loc+'_split_newmean.png',bbox_inches='tight')
 plt.close()
 

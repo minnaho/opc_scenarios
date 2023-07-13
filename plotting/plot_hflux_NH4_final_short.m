@@ -491,6 +491,13 @@ tpeddy4_sum = sum(tpeddy4(end-160:end));
 tpeddy5_sum = sum(tpeddy5(end-160:end));
 tpeddy6_sum = sum(tpeddy6(end-160:end));
 
+tptotal1 = tpmean1_sum+tpeddy1_sum
+tptotal2 = tpmean2_sum+tpeddy2_sum
+tptotal3 = tpmean3_sum+tpeddy3_sum
+tptotal4 = tpmean4_sum+tpeddy4_sum
+tptotal5 = tpmean5_sum+tpeddy5_sum
+tptotal6 = tpmean6_sum+tpeddy6_sum
+
 tpmean1_sum
 tpmean2_sum
 tpmean3_sum
@@ -503,6 +510,22 @@ tpeddy3_sum
 tpeddy4_sum
 tpeddy5_sum
 tpeddy6_sum
+
+writematrix(tpeddy1,'eddy_PNDN_only_realistic.txt')
+writematrix(tpeddy2,'eddy_pndn50_fixriver.txt')
+writematrix(tpeddy3,'eddy_pndn90_fixriver.txt')
+writematrix(tpeddy4,'eddy_FNDN_only_realistic.txt')
+writematrix(tpeddy5,'eddy_fndn50_fixriver.txt')
+writematrix(tpeddy6,'eddy_fndn90_fixriver.txt')
+
+writematrix(tpmean1,'mean_PNDN_only_realistic.txt')
+writematrix(tpmean2,'mean_pndn50_fixriver.txt')
+writematrix(tpmean3,'mean_pndn90_fixriver.txt')
+writematrix(tpmean4,'mean_FNDN_only_realistic.txt')
+writematrix(tpmean5,'mean_fndn50_fixriver.txt')
+writematrix(tpmean6,'mean_fndn90_fixriver.txt')
+
+legend('50% N Red. eddy','50% N Recy. 50% Recy. eddy','50% N Recy. 90% Recy. eddy','85% N Red. eddy','85% N Red. 50% Recy. eddy','85% N Red. 90% Recy. eddy','location','best','fontsize',14)
 
 tpmean1_05 = prctile(tpmean1,5)
 tpmean2_05 = prctile(tpmean2,5)

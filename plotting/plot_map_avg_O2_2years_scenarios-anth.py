@@ -312,6 +312,11 @@ for e_i in range(2,len(exp)):
     #offshore_std[e_i-2] = np.nanstd([data_offavg1-anth_offavg1,data_offavg2-anth_offavg2])
 
     varplt = dataavg - anthavg
+
+    print('O2 change',title_exp[e_i],str(np.nanmean(varplt[20:-20,20:])))    
+    print('O2 change 5%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],5)))  
+    print('O2 change 95%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],95)))  
+
     onshore_var[e_i-2] = data_onshore - anth_onshore
     offshore_var[e_i-2] = data_offshore - anth_offshore
 

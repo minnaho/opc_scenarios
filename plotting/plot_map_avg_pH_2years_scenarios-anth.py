@@ -253,6 +253,8 @@ for e_i in [1,2,5]:
     data_offshore = np.nanmean(dataavg*mask_offshore)
 
     varplt = dataavg - cntrlavg
+
+
     # plot maps
     p_plot = ax.flat[ax_i].pcolormesh(lon_nc,lat_nc,varplt,transform=ccrs.PlateCarree(),cmap=c_map,norm=mcolors.TwoSlopeNorm(vmin=-0.1,vcenter=0,vmax=0.1))
     c_plot = ax.flat[ax_i].contour(lon_nc,lat_nc,varplt,[clinemax2],transform=ccrs.PlateCarree(),colors='red',linestyles='solid')
@@ -311,6 +313,14 @@ for e_i in range(2,len(exp)):
     #offshore_std[e_i-2] = np.nanstd([data_offavg1-anth_offavg1,data_offavg2-anth_offavg2])
 
     varplt = dataavg - anthavg
+
+    print('pH change',title_exp[e_i],str(np.nanmean(varplt[20:-20,20:])))  
+    #print('pH change 25%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],25)))  
+    #print('pH change 75%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],75)))  
+    print('pH change 5%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],5)))  
+    print('pH change 95%',title_exp[e_i],str(np.nanpercentile(varplt[20:-20,20:],95)))  
+
+
     onshore_var[e_i-2] = data_onshore - anth_onshore
     offshore_var[e_i-2] = data_offshore - anth_offshore
 
